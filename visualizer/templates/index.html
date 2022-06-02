@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <link rel="stylesheet" href='/static/style.css' />
+        <link href='/scripts/script.js'/>
+    </head>
+    <body>
+        <div class="titleDiv">
+            <h1>Vanetza Visualizer</h1>
+        </div>
+        <div class="container">
+            <div id="simDiv" class="simulationDiv">
+                <div id="overlayDiv" class="overlay" style="opacity: 0;">Battery</div>
+                <button id="obu1Button" class="obu" onclick="toggleBatteryOverlay()" type="button">Car</button>
+                <button id="rsu1Button" class="rsu" onclick="convertLatLng(40.64088,-8.65397)" type="button">RSU</button>
+            </div>
+        </div>
+    </body>
+</html>
+
+<script>
+    document.getElementById("rsu1Button").style.left = "500px";
+    document.getElementById("rsu1Button").style.top = "200px";
+
+    setInterval(function()
+    {
+        var coords = document.getElementById("obu1Button").getBoundingClientRect();
+        var divCoords = document.getElementById("simDiv").getBoundingClientRect();
+        //console.log(coords);
+        if(parseInt(coords.right) >= parseInt(divCoords.right) || parseInt(coords.bottom) >= parseInt(divCoords.bottom))
+        {
+            document.getElementById("obu1Button").style.position = "absolute";
+            document.getElementById("obu1Button").style.top = parseInt(divCoords.top) + 5 + 'px';
+            document.getElementById("obu1Button").style.left = parseInt(divCoords.left) + 5 + 'px';
+            document.getElementById("overlayDiv").style.position = "absolute";
+            document.getElementById("overlayDiv").style.top = parseInt(divCoords.top) - 18 + 'px';
+            document.getElementById("overlayDiv").style.left = parseInt(divCoords.left) + 5 + 'px';
+        } else {
+            document.getElementById("obu1Button").style.position = "absolute";
+            document.getElementById("obu1Button").style.top = parseInt(coords.top) + 5 + 'px';
+            document.getElementById("obu1Button").style.left = parseInt(coords.left) + 5 + 'px';
+            document.getElementById("overlayDiv").style.position = "absolute";
+            document.getElementById("overlayDiv").style.top = parseInt(coords.top) - 18 + 'px';
+            document.getElementById("overlayDiv").style.left = parseInt(coords.left) + 5 + 'px';
+        }
+    }, 1000)
+
+    function toggleBatteryOverlay()
+    {
+        let overlayDiv = document.querySelector(".overlay");
+        if (overlayDiv.style.opacity === '0')
+            overlayDiv.style.opacity = 1;
+        else
+            overlayDiv.style.opacity = 0;
+    }
+
+    function convertLatLng(lat, lng)
+    {
+        var map_width = 1200;
+        var map_height = 700;
+        var screenX = ((lng + 180) * (map_width / 360));
+        var screenY = (((lat * -1) + 90) * (map_height / 180));
+        console.log(screenX);
+        console.log(screenY);
+        document.getElementById("rsu1Button").style.position = "absolute";
+        document.getElementById("rsu1Button").style.left = screenX + 'px';
+        document.getElementById("rsu1Button").style.top = screenY + 'px';
+        console.log(document.getElementById("rsu1Button").getBoundingClientRect());
+    }
+</script>
