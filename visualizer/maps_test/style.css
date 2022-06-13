@@ -1,8 +1,32 @@
-/* Set the size of the div element that contains the map */
-#map {
-    height: 400px;
-    /* The height is 400 pixels */
-    width: 100%;
-    /* The width is the width of the web page */
-  }
+.grid-container {
+  grid-template-areas: 
+  'b c';
+  border-color: red;
+  display: grid;
+}
+
+.grid-item1 {
+  grid-area: 'b';
+}
+
+.grid-item2 {
+  grid-area: 'c';
+}
+
+.row::after {
+  content: "";
+  display: inline-table;
+  clear: both;
+}
+
+.statusColumn {
+  float: left;
+  width: 30%;
+}
+
+.mapColumn {
+  float: right;
+  width: 65%;
+  height: 100vh;
+}
   
