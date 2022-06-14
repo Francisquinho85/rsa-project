@@ -2,7 +2,8 @@ var map;
 var rsu1;
 var rsu2;
 
-function initMap() {
+function initMap() 
+{
     const aveiro = { lat: 40.632728, lng: -8.657024};
     var mapProp = {
         center: aveiro,
@@ -17,7 +18,8 @@ function initMap() {
         icon: {
             url: 'parking-icon.png',
             scaledSize: new google.maps.Size(100,100)
-        } 
+        }, 
+        id: 1
     });
 
     rsu2 = new google.maps.Marker({
@@ -26,22 +28,61 @@ function initMap() {
         icon: {
             url: 'parking-icon.png',
             scaledSize: new google.maps.Size(100,100)
-        } 
+        }, 
+        id: 2
     });
+}
+
+function updateBattery(name, battery)
+{
+    
 }
 
 const sio = io();
 
-sio.on('connect', () => {
+sio.on('connect', () => 
+{
     console.log('connected');
 });
 
-sio.on('disconnect', () => {
+sio.on('disconnect', () => 
+{
     console.log('disconnected');
 });
 
-sio.on('send_coords', (data, cb) => {
-    var newLocation = new google.maps.LatLng(data.coords[0], data.coords[1]);
-    rsu1.setPosition(newLocation);
+sio.on('send_coords', (data, cb) => 
+{
+    var newLocation = new google.maps.LatLng(data.latitude, data.longitude);
+    window[data.name].setPosition(newLocation);
+    /*switch(data.id) {
+        case 1:
+            rsu1.setPosition(newLocation);
+            break;
+        case 2:
+            rsu2.setPosition(newLocation);
+            break;
+        case 3:
+            obu1.setPosition(newLocation);
+            break;
+        case 4:
+            obu2.setPosition(newLocation);
+            break;
+        case 5:
+            obu3.setPosition(newLocation);
+            break;
+        case 6:
+            obu4.setPosition(newLocation);
+            break;
+        case 7:
+            obu5.setPosition(newLocation);
+            break;
+        case 8:
+            obu6.setPosition(newLocation);
+            break;
+        default:
+            console.log("No Units with that name");
+            break;
+      } */
+    
     cb(newLocation)
 });

@@ -19,14 +19,83 @@
   clear: both;
 }
 
-.statusColumn {
-  float: left;
-  width: 30%;
-}
-
 .mapColumn {
   float: right;
   width: 65%;
   height: 100vh;
 }
+
+table {
+  width: 100%;
+  background-color: #fff;
+  height: 100vh;
+}
+
+th, td {
+  padding-right: 10px;
+}
+
+.column100 {
+  width: 130px;
+  padding-left: 25px;;
+}
+
+.column100.column3 {
+  width: 265px;
+  padding-left: 42px;
+}
+
+.row100.head th {
+  padding-top: 24px;
+  padding-bottom: 20px;
+}
+
+.row100 td {
+  padding-top: 18px;
+  padding-bottom: 14px;
+}
+
+.table100 {
+  float:left;
+  width: 35%;
+}
+
+.table100.ver1 td {
+  font-family: Montserrat-Regular;
+  font-size: 14px;
+  color: #808080;
+  line-height: 1.4;
+}
+
+.table100.ver1 th {
+  font-family: Montserrat-Medium;
+  font-size: 12px;
+  color: #fff;
+  line-height: 1.4;
+  text-transform: uppercase;
+
+  background-color: #6c7ae0;
+}
+
+.table100.ver1 .row100:hover {
+  background-color: #f2f2f2;
+}
+
+.table100.ver1 .hov-column-ver1 {
+  background-color: #f2f2f2;
+}
+
+.table100.ver1 .hov-column-head-ver1 {
+  background-color: #484848 !important;
+}
+
+.table100.ver1 .row100 td:hover {
+  background-color: #6c7ae0;
+  color: #fff;
+}
+
+.table100.ver1 .row100 {
+  height: 50px;
+}
+
   
