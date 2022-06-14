@@ -2,7 +2,7 @@ import paho.mqtt.client as mqtt
 
 
 class Park:
-    def __init__(self, slots, charges, latitude, longitude, cam, denm, ip, id):
+    def __init__(self, slots, charges, latitude, longitude, cam, denm, ip, name):
         self.slots = slots
         self.charges = charges
         self.freeCharges = charges
@@ -13,7 +13,7 @@ class Park:
         self.cam = cam
         self.denm = denm
         self.ip = ip
-        self.id = id
+        self.name = name
         self.mqttc = mqtt.Client()
         self.mqttc.connect(ip)
         self.mqttc.on_connect = self.on_connect
@@ -34,8 +34,9 @@ class Park:
         self.mqttc.subscribe([("vanetza/out/cam", 0), ("vanetza/out/denm", 0)])
 
     def on_message(self, client, userdata, msg):
-        if(msg.topic == "vanetza/out/denm"):
-            print("park receive denm")
-        if(msg.topic == "vanetza/out/cam"):
-            print("park receive cam")
-        # print(msg.payload)
+        a = 0
+        # if(msg.topic == "vanetza/out/denm"):
+        #     print("park receive denm")
+        # if(msg.topic == "vanetza/out/cam"):
+        #     print("park receive cam")
+        # # print(msg.payload)
