@@ -29,6 +29,7 @@ table {
   width: 100%;
   background-color: #fff;
   height: 100vh;
+  display: none;
 }
 
 th, td {
@@ -96,6 +97,12 @@ th, td {
 
 .table100.ver1 .row100 {
   height: 50px;
+}
+
+.startBtn {
+  margin-top: 20vh;
+  width: 30%;
+  height: 10vh;
 }
 
   

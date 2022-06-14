@@ -20,15 +20,12 @@ app = socketio.WSGIApp(sio, static_files={
 @sio.event
 def connect(sid, environ):
     print(sid, 'connected')
-    sio.sleep(3)
-    sio.start_background_task(main, sid, sio)
-
 
 @sio.event
 def disconnect(sid):
     print(sid, 'disconnected')
 
-# @sio.event
-# def sum(sid, data):
-#    result = data['numbers'][0] + data['numbers'][1]
-#    return result
+@sio.event
+def startSim(sid):
+    sio.sleep(1)
+    sio.start_background_task(main, sid, sio)

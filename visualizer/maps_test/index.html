@@ -9,7 +9,7 @@
 
 <div class="row">
     <div class="table100 ver1">
-        <table data-vertable="ver1">
+        <table id="verTable" data-vertable="ver1">
             <thead>
                 <tr class="row100 head">
                     <th class="column100 column1" data-column="column1">Device Name</th>
@@ -30,36 +30,37 @@
                 </tr>
                 <tr class="row100">
                     <td class="column100 column1" data-column="column1">OBU1</th>
-                    <td id="battObu1" class="column100 column2" data-column="column2"></th>
+                    <td id="obu1batt" class="column100 column2" data-column="column2"></th>
                     <td class="column100 column3" data-column="column3"></th>
                 </tr>
                 <tr class="row100">
                     <td class="column100 column1" data-column="column1">OBU2</th>
-                    <td id="battObu2" class="column100 column2" data-column="column2"></th>
+                    <td id="obu2batt" class="column100 column2" data-column="column2"></th>
                     <td class="column100 column3" data-column="column3"></th>
                 </tr>
                 <tr class="row100">
                     <td class="column100 column1" data-column="column1">OBU3</th>
-                    <td id="battObu3" class="column100 column2" data-column="column2"></th>
+                    <td id="obu3batt" class="column100 column2" data-column="column2"></th>
                     <td class="column100 column3" data-column="column3"></th>
                 </tr>
                 <tr class="row100">
                     <td class="column100 column1" data-column="column1">OBU4</th>
-                    <td id="battObu4" class="column100 column2" data-column="column2"></th>
+                    <td id="obu4batt" class="column100 column2" data-column="column2"></th>
                     <td class="column100 column3" data-column="column3"></th>
                 </tr>
                 <tr class="row100">
                     <td class="column100 column1" data-column="column1">OBU5</th>
-                    <td id="battObu5" class="column100 column2" data-column="column2"></th>
+                    <td id="obu5batt" class="column100 column2" data-column="column2"></th>
                     <td class="column100 column3" data-column="column3"></th>
                 </tr>
                 <tr class="row100">
                     <td class="column100 column1" data-column="column1">OBU6</th>
-                    <td id="battObu6" class="column100 column2" data-column="column2"></th>
+                    <td id="obu6batt" class="column100 column2" data-column="column2"></th>
                     <td class="column100 column3" data-column="column3"></th>
                 </tr>
             </tbody>
         </table>
+        <button id="startBtn" class="startBtn" onclick="startSim()">Start</button>
     </div>
 </div>
 

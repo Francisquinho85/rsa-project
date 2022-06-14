@@ -1,6 +1,4 @@
-var map;
-var rsu1;
-var rsu2;
+var map, rsu1, rsu2, obu1, obu2, obu3, obu4, obu5, obu6;
 
 function initMap() 
 {
@@ -16,7 +14,7 @@ function initMap()
         position: rsu1Location,
         map: map,
         icon: {
-            url: 'parking-icon.png',
+            url: 'images/parking-icon.png',
             scaledSize: new google.maps.Size(100,100)
         }, 
         id: 1
@@ -26,16 +24,76 @@ function initMap()
         position: rsu2Location,
         map: map,
         icon: {
-            url: 'parking-icon.png',
+            url: 'images/parking-icon.png',
             scaledSize: new google.maps.Size(100,100)
         }, 
         id: 2
     });
 }
 
+function startSim()
+{
+    sio.emit('startSim');
+    document.getElementById("startBtn").style.display = "none";
+    document.getElementById("verTable").style.display = "table";
+    obu1 = new google.maps.Marker({
+        map: map,
+        icon: {
+            url: 'images/car-icon.png',
+            scaledSize: new google.maps.Size(100,100)
+        }, 
+        id: 3
+    });
+
+    obu2 = new google.maps.Marker({
+        map: map,
+        icon: {
+            url: 'car-icon.png',
+            scaledSize: new google.maps.Size(100,100)
+        }, 
+        id: 4
+    });
+
+    obu3 = new google.maps.Marker({
+        map: map,
+        icon: {
+            url: 'car-icon.png',
+            scaledSize: new google.maps.Size(100,100)
+        }, 
+        id: 5
+    });
+
+    obu4 = new google.maps.Marker({
+        map: map,
+        icon: {
+            url: 'car-icon.png',
+            scaledSize: new google.maps.Size(100,100)
+        }, 
+        id: 6
+    });
+
+    obu5 = new google.maps.Marker({
+        map: map,
+        icon: {
+            url: 'car-icon.png',
+            scaledSize: new google.maps.Size(100,100)
+        }, 
+        id: 7
+    });
+
+    obu6 = new google.maps.Marker({
+        map: map,
+        icon: {
+            url: 'car-icon.png',
+            scaledSize: new google.maps.Size(100,100)
+        }, 
+        id: 8
+    });
+}
+
 function updateBattery(name, battery)
 {
-    
+    document.getElementById(name + 'batt').innerHTML = battery + '%';
 }
 
 const sio = io();
@@ -54,35 +112,6 @@ sio.on('send_coords', (data, cb) =>
 {
     var newLocation = new google.maps.LatLng(data.latitude, data.longitude);
     window[data.name].setPosition(newLocation);
-    /*switch(data.id) {
-        case 1:
-            rsu1.setPosition(newLocation);
-            break;
-        case 2:
-            rsu2.setPosition(newLocation);
-            break;
-        case 3:
-            obu1.setPosition(newLocation);
-            break;
-        case 4:
-            obu2.setPosition(newLocation);
-            break;
-        case 5:
-            obu3.setPosition(newLocation);
-            break;
-        case 6:
-            obu4.setPosition(newLocation);
-            break;
-        case 7:
-            obu5.setPosition(newLocation);
-            break;
-        case 8:
-            obu6.setPosition(newLocation);
-            break;
-        default:
-            console.log("No Units with that name");
-            break;
-      } */
-    
+    updateBattery(data.name, data.battery);
     cb(newLocation)
 });
