@@ -1,4 +1,8 @@
+from time import sleep
 import paho.mqtt.client as mqtt
+import json
+from simulator.Messages.event import event
+import time
 
 
 class Park:
@@ -35,8 +39,27 @@ class Park:
 
     def on_message(self, client, userdata, msg):
         a = 0
-        # if(msg.topic == "vanetza/out/denm"):
-        #     print("park receive denm")
+        message = json.loads(msg.payload.decode())
+        if(msg.topic == "vanetza/out/denm" and message["fields"]["denm"]
+           ["situation"]["eventType"]["causeCode"] == event["batteryStatus"]):
+            # print("park receive denm")
+            if(self.freeCharges > 0):
+                self.updateEvent(event["parkStatus"],
+                                 event["parkWithChargerPlace"])
+            elif(self.freeSlots > 0):
+                self.updateEvent(event["parkStatus"],
+                                 event["parkWithNormalPlace"])
+            else:
+                self.updateEvent(event["parkStatus"],
+                                 event["parkFull"])
+            self.mqttc.publish("vanetza/in/denm", json.dumps(self.denm))
         # if(msg.topic == "vanetza/out/cam"):
         #     print("park receive cam")
-        # # print(msg.payload)
+            # print(msg.payload["fields"]["denm"]["situation"]["eventType"]["causeCode"])
+            # print(json.loads(msg.payload.decode())["fields"]["denm"]
+            #       ["situation"]["eventType"]["causeCode"])
+
+    def run(self, sio, sid):
+        while True:
+            self.mqttc.publish("vanetza/in/cam", json.dumps(self.cam))
+            time.sleep(1)

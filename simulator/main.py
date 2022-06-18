@@ -1,8 +1,9 @@
 import copy
+import imp
 from random import randint
 from time import sleep
 import json
-
+import threading
 from simulator.car import Car
 from simulator.park import Park
 from simulator.Messages.event import event
@@ -83,24 +84,37 @@ def main(sid, sio):
     rsu2.updateLocation()
     rsus.append(rsu2)
 
-    while True:
-        for obu in obus:
-            obu.location += 1
-            obu.battery -= randint(0, 3)
-            if(obu.location > 135):
-                obu.location -= 136
-            obu.updateLocation((float)(coords_json[str(obu.location)]["latitude"]), (float)(
-                coords_json[str(obu.location)]["longitude"]))
-            obu.mqttc.publish("vanetza/in/cam", json.dumps(obu.cam))
-            if(obu.battery <= 25):
-                obu.denm["situation"]["eventType"]["causeCode"] = event["batteryStatus"]
-                obu.denm["situation"]["eventType"]["causeCode"] = event["battery0_25"]
-                obu.mqttc.publish("vanetza/in/denm", json.dumps(obu.denm))
-            result = sio.call(
-                'send_coords', obu.sendLocation(), to=sid)
-            # obu.updateLocation((float)(coords_json[i]["latitude"]),
-            #                     (float)(coords_json[i]["longitude"]))
-            # ret2 = park1.mqttc.publish("vanetza/in/cam", json.dumps(park1.cam))
-        sleep(1)
+    # while True:
+    #     for obu in obus:
+    #         obu.location += 1
+    #         obu.battery -= randint(0, 3)
+    #         if(obu.location > 135):
+    #             obu.location -= 136
+    #         obu.updateLocation((float)(coords_json[str(obu.location)]["latitude"]), (float)(
+    #             coords_json[str(obu.location)]["longitude"]))
+    #         obu.mqttc.publish("vanetza/in/cam", json.dumps(obu.cam))
+    #         if(obu.battery <= 25):
+    #             obu.updateEvent(event["batteryStatus"], event["battery0_25"])
+    #             obu.mqttc.publish("vanetza/in/denm", json.dumps(obu.denm))
+    #         result = sio.call(
+    #             'send_coords', obu.sendLocation(), to=sid)
+    #         # obu.updateLocation((float)(coords_json[i]["latitude"]),
+    #         #                     (float)(coords_json[i]["longitude"]))
+    #         # ret2 = park1.mqttc.publish("vanetza/in/cam", json.dumps(park1.cam))
+    #     for rsu in rsus:
+    #         rsu.mqttc.publish("vanetza/in/cam", json.dumps(rsu.cam))
+    #     sleep(1)
+    proc = []
+    for obu in obus:
+        p = threading.Thread(target=obu.run, args=(sio, sid, coords_json))
+        proc.append(p)
 
-    mqttc.disconnect()
+    for rsu in rsus:
+        p = threading.Thread(target=rsu.run, args=(sio, sid))
+        proc.append(p)
+
+    for p in proc:
+        p.start()
+
+    for p in proc:
+        p.join()

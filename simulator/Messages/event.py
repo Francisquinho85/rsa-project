@@ -10,7 +10,12 @@ event = {
     # park status
     "parkStatus": 36,
     "parkFull": 37,
-    "parkWithChangerPlace": 38,
-    "parkWithNormalPlace": 39
+    "parkWithChargerPlace": 38,
+    "parkWithNormalPlace": 39,
+
+    # reservation
+    "reserveSlot": 40,
+    "confirmSLot": 41,
+    "cancelSlot": 42
 
 }
