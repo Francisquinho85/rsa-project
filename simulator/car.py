@@ -24,6 +24,7 @@ class Car:
         self.location = 0
         self.battery = 0
         self.wantToCharge = False
+        self.slotReserved = False
         self.parkLatitude = 0
         self.parkLongitude = 0
         self.mqttc = mqtt.Client()
@@ -64,30 +65,40 @@ class Car:
         if(msg.topic == "vanetza/out/denm" and self.wantToCharge):
             # Receive park status
             if(message["fields"]["denm"]
-                    ["situation"]["eventType"]["causeCode"] == event["parkStatus"]):
+                    ["situation"]["eventType"]["causeCode"] == event["parkStatus"] and not self.slotReserved):
                 if(message["fields"]["denm"]
                         ["situation"]["eventType"]["subCauseCode"] == event["parkWithChargerPlace"]):
+                    print("Reserving Charger slot")
                     self.updateEvent(event["reserveSlotCharger"], message["fields"]
                                      ["denm"]["management"]["actionID"]["originatingStationID"])
                     self.mqttc.publish("vanetza/in/denm",
                                        json.dumps(self.denm))
+                    self.slotReserved = True
                 elif(message["fields"]["denm"]
                         ["situation"]["eventType"]["subCauseCode"] == event["parkWithNormalPlace"]):
+                    print("Reserving Normal slot")
                     self.updateEvent(event["reserveSlotNormal"], message["fields"]
                                      ["denm"]["management"]["actionID"]["originatingStationID"])
                     self.mqttc.publish("vanetza/in/denm",
                                        json.dumps(self.denm))
+                    self.slotReserved = True
             # Receive park confirm or cancel
+            print(message["fields"]["denm"]
+                    ["situation"]["eventType"]["subCauseCode"])
             if(message["fields"]["denm"]
                     ["situation"]["eventType"]["subCauseCode"] == self.id):
+                print("Receive park confirm or cancel")
                 if(message["fields"]["denm"]
-                        ["situation"]["eventType"]["causeCode"] == event["confirmSLot"]):
-                    print("Slot Confirmed")
+                        ["situation"]["eventType"]["causeCode"] == event["confirmSlot"]):
+                    print("Slot Confirmed for " + self.name)
                     self.wantToCharge = False
+                    self.slotReserved = False
                     self.parkLatitude = self.denm["management"]["eventPosition"]["latitude"]
                     self.parkLongitude = self.denm["management"]["eventPosition"]["longitude"]
                 if(message["fields"]["denm"]
                         ["situation"]["eventType"]["causeCode"] == event["cancelSlot"]):
+                    print("Slot Canceled for " + self.name)
+                    self.slotReserved = False
                     a = 0  # TODO normal life
 
     def getParkLocation(self, coords_json):
@@ -163,6 +174,7 @@ class Car:
                 'send_coords', self.sendLocation(), to=sid)
 
     def run(self, sio, sid, coords_json):
+        self.mqttc.publish("vanetza/in/cam", json.dumps(self.cam))
         while True:
             if(self.parkLatitude != 0):
                 self.goToThePark(sio, sid, coords_json)
@@ -171,11 +183,12 @@ class Car:
             self.location += 1
             self.battery -= randint(0, 3)
             if(self.location > 135):
-                self.location -= 136
+                self.location = 0
             self.updateLocation((float)(coords_json[str(self.location)]["latitude"]), (float)(
                 coords_json[str(self.location)]["longitude"]))
-            self.mqttc.publish("vanetza/in/cam", json.dumps(self.cam))
-            if(self.battery <= 25 and self.battery % 5 == 0):
+            #self.mqttc.publish("vanetza/in/cam", json.dumps(self.cam))
+            if(self.battery <= 25 and not self.wantToCharge):
+                print("I want to charge " + self.name)
                 self.wantToCharge = True
                 self.updateEvent(event["batteryStatus"], event["battery0_25"])
                 self.mqttc.publish("vanetza/in/denm", json.dumps(self.denm))

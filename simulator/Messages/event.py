@@ -16,7 +16,7 @@ event = {
     # reservation
     "reserveSlotCharger": 40,
     "reserveSlotNormal": 41,
-    "confirmSLot": 42,
+    "confirmSlot": 42,
     "cancelSlot": 43
 
 }

@@ -46,6 +46,7 @@ class Park:
         message = json.loads(msg.payload.decode())
         if(msg.topic == "vanetza/out/denm" and message["fields"]["denm"]
            ["situation"]["eventType"]["causeCode"] == event["batteryStatus"]):
+            print("Sending Park status " + self.name)
             if(self.freeCharges > 0):
                 self.updateEvent(event["parkStatus"],
                                  event["parkWithChargerPlace"])
@@ -58,29 +59,34 @@ class Park:
             self.mqttc.publish("vanetza/in/denm", json.dumps(self.denm))
         # Reserve charger slot confirmation or cancel
         if(msg.topic == "vanetza/out/denm" and message["fields"]["denm"]
-           ["situation"]["eventType"]["causeCode"] == event["reserveSlotCharger"]):
-            if(self.freeCharges > 0):
-                self.updateEvent(event["confirmSLot"], message["fields"]
-                                 ["denm"]["management"]["actionID"]["originatingStationID"])
-                self.freeCharges -= 1
-                self.freeSlots -= 1
-            elif(self.freeCharges == 0):
-                self.updateEvent(event["cancelSlot"], message["fields"]
-                                 ["denm"]["management"]["actionID"]["originatingStationID"])
-            self.mqttc.publish("vanetza/in/denm", json.dumps(self.denm))
-        # Reserve normal slot confirmation or cancel
-        if(msg.topic == "vanetza/out/denm" and message["fields"]["denm"]
-           ["situation"]["eventType"]["causeCode"] == event["reserveSlotNormal"]):
-            if(self.freeSlots > 0):
-                self.updateEvent(event["confirmSLot"], message["fields"]
-                                 ["denm"]["management"]["actionID"]["originatingStationID"])
-                self.freeSlots -= 1
-            elif(self.freeSlots == 0):
-                self.updateEvent(event["cancelSlot"], message["fields"]
-                                 ["denm"]["management"]["actionID"]["originatingStationID"])
-            self.mqttc.publish("vanetza/in/denm", json.dumps(self.denm))
+           ["situation"]["eventType"]["subCauseCode"] == self.id):
+            if(message["fields"]["denm"]
+            ["situation"]["eventType"]["causeCode"] == event["reserveSlotCharger"]):
+                if(self.freeCharges > 0):
+                    self.updateEvent(event["confirmSlot"], message["fields"]
+                                    ["denm"]["management"]["actionID"]["originatingStationID"])
+                    self.freeCharges -= 1
+                    self.freeSlots -= 1
+                    self.mqttc.publish("vanetza/in/denm", json.dumps(self.denm))
+                    print(self.name + " Confirming slot charger")
+                elif(self.freeCharges == 0):
+                    self.updateEvent(event["cancelSlot"], message["fields"]
+                                    ["denm"]["management"]["actionID"]["originatingStationID"])
+                    print(self.name + " Canceling slot charger")
+            # Reserve normal slot confirmation or cancel
+            if(message["fields"]["denm"]
+            ["situation"]["eventType"]["causeCode"] == event["reserveSlotNormal"]):
+                print("RSU Confirming slot normal")
+                if(self.freeSlots > 0):
+                    self.updateEvent(event["confirmSlot"], message["fields"]
+                                    ["denm"]["management"]["actionID"]["originatingStationID"])
+                    self.freeSlots -= 1
+                elif(self.freeSlots == 0):
+                    self.updateEvent(event["cancelSlot"], message["fields"]
+                                    ["denm"]["management"]["actionID"]["originatingStationID"])
+                self.mqttc.publish("vanetza/in/denm", json.dumps(self.denm))
 
     def run(self, sio, sid):
+        self.mqttc.publish("vanetza/in/cam", json.dumps(self.cam))
         while True:
-            self.mqttc.publish("vanetza/in/cam", json.dumps(self.cam))
             time.sleep(1)
