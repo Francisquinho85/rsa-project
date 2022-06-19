@@ -1,7 +1,7 @@
-visualizer/__pycache__/
-visualizer/server_test/
-visualizer/templates/
-visualizer/static/
-__pycache__/
-simulator/__pycache__/
+visualizer/__pycache__
+visualizer/server_test
+visualizer/templates
+visualizer/static
+__pycache__
+simulator/__pycache__
 test_server_app.py

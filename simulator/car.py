@@ -67,13 +67,13 @@ class Car:
                     ["situation"]["eventType"]["causeCode"] == event["parkStatus"]):
                 if(message["fields"]["denm"]
                         ["situation"]["eventType"]["subCauseCode"] == event["parkWithChargerPlace"]):
-                    self.updateEvent(event["reserveSlot"], message["fields"]
+                    self.updateEvent(event["reserveSlotCharger"], message["fields"]
                                      ["denm"]["management"]["actionID"]["originatingStationID"])
                     self.mqttc.publish("vanetza/in/denm",
                                        json.dumps(self.denm))
                 elif(message["fields"]["denm"]
                         ["situation"]["eventType"]["subCauseCode"] == event["parkWithNormalPlace"]):
-                    self.updateEvent(event["reserveSlot"], message["fields"]
+                    self.updateEvent(event["reserveSlotNormal"], message["fields"]
                                      ["denm"]["management"]["actionID"]["originatingStationID"])
                     self.mqttc.publish("vanetza/in/denm",
                                        json.dumps(self.denm))
@@ -82,6 +82,8 @@ class Car:
                     ["situation"]["eventType"]["subCauseCode"] == self.id):
                 if(message["fields"]["denm"]
                         ["situation"]["eventType"]["causeCode"] == event["confirmSLot"]):
+                    print("Slot Confirmed")
+                    self.wantToCharge = False
                     self.parkLatitude = self.denm["management"]["eventPosition"]["latitude"]
                     self.parkLongitude = self.denm["management"]["eventPosition"]["longitude"]
                 if(message["fields"]["denm"]
@@ -95,28 +97,77 @@ class Car:
 
     def goToThePark(self, sio, sid, coords_json):
         parkLocation = self.getParkLocation(coords_json)
-        abs(parkLocation - self.location) < abs(self.location - parkLocation)
+        reverse = False
+        print("Going to the park " + self.name)
+        #Check which direction is faster
+        print(parkLocation, self.location)
 
+        if(parkLocation > self.location):
+            if((parkLocation - self.location) < (self.location + (135 - parkLocation))):
+                reverse = False
+            else:    
+                reverse = True
+        else:
+            if((self.location - parkLocation) < (parkLocation + (135 - self.location))):
+                reverse = True
+            else:
+                reverse = False
+        
         while True:
-            self.location += 1
+            #Check if arrived to the park
+            if(self.location == parkLocation):
+                break
+
+            #Drive to park in the fastest direction
+            if(reverse):
+                self.location -= 1
+            else:
+                self.location += 1
+            
+            #Decrease battery percentage
             self.battery -= randint(0, 3)
+
+            #Check if is in the position limits
             if(self.location > 135):
-                self.location -= 136
+                self.location = 0
+            elif(self.location < 0):
+                self.location = 135
+            
+            #Update Coordinates
             self.updateLocation((float)(coords_json[str(self.location)]["latitude"]), (float)(
                 coords_json[str(self.location)]["longitude"]))
             self.mqttc.publish("vanetza/in/cam", json.dumps(self.cam))
-            if(self.battery <= 25 and self.battery % 5 == 0):
-                self.wantToCharge = True
-                self.updateEvent(event["batteryStatus"], event["battery0_25"])
-                self.mqttc.publish("vanetza/in/denm", json.dumps(self.denm))
+            
+            #Send new coordinates to frontend
             result = sio.call(
                 'send_coords', self.sendLocation(), to=sid)
             time.sleep(1)
+
+    def enterThePark(self, sio, sid, coords_json, desiredBattery):
+        isCharged = False
+        print("Entered the park " + self.name)
+        while True:
+            if(self.battery == desiredBattery):
+                break
+            self.battery += 10
+            if self.battery >= 100:
+                self.battery = 100
+            time.sleep(1)
+            result = sio.call('enter_park', self.sendLocation(), to=sid)
+
+    def leaveThePark(self, sio, sid, coords_json):
+        print("Leaving the park " + self.name)
+        self.parkLatitude = 0
+        self.parkLongitude = 0
+        result = sio.call(
+                'send_coords', self.sendLocation(), to=sid)
 
     def run(self, sio, sid, coords_json):
         while True:
             if(self.parkLatitude != 0):
                 self.goToThePark(sio, sid, coords_json)
+                self.enterThePark(sio, sid, coords_json, 100)
+                self.leaveThePark(sio, sid, coords_json)
             self.location += 1
             self.battery -= randint(0, 3)
             if(self.location > 135):
