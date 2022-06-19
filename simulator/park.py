@@ -6,7 +6,7 @@ import time
 
 
 class Park:
-    def __init__(self, slots, charges, latitude, longitude, cam, denm, ip, name):
+    def __init__(self, slots, charges, latitude, longitude, cam, denm, ip, name, id):
         self.slots = slots
         self.charges = charges
         self.freeCharges = charges
@@ -17,12 +17,17 @@ class Park:
         self.cam = cam
         self.denm = denm
         self.ip = ip
+        self.id = id
         self.name = name
         self.mqttc = mqtt.Client()
         self.mqttc.connect(ip)
         self.mqttc.on_connect = self.on_connect
         self.mqttc.on_message = self.on_message
         self.mqttc.loop_start()
+        self.cam["stationID"] = id
+        self.cam["stationType"] = 15
+        self.denm["management"]["actionID"]["originatingStationID"] = id
+        self.denm["management"]["stationType"] = 15
 
     def updateLocation(self):
         self.denm["management"]["eventPosition"]["latitude"] = self.latitude
@@ -38,11 +43,9 @@ class Park:
         self.mqttc.subscribe([("vanetza/out/cam", 0), ("vanetza/out/denm", 0)])
 
     def on_message(self, client, userdata, msg):
-        a = 0
         message = json.loads(msg.payload.decode())
         if(msg.topic == "vanetza/out/denm" and message["fields"]["denm"]
            ["situation"]["eventType"]["causeCode"] == event["batteryStatus"]):
-            # print("park receive denm")
             if(self.freeCharges > 0):
                 self.updateEvent(event["parkStatus"],
                                  event["parkWithChargerPlace"])
@@ -53,11 +56,29 @@ class Park:
                 self.updateEvent(event["parkStatus"],
                                  event["parkFull"])
             self.mqttc.publish("vanetza/in/denm", json.dumps(self.denm))
-        # if(msg.topic == "vanetza/out/cam"):
-        #     print("park receive cam")
-            # print(msg.payload["fields"]["denm"]["situation"]["eventType"]["causeCode"])
-            # print(json.loads(msg.payload.decode())["fields"]["denm"]
-            #       ["situation"]["eventType"]["causeCode"])
+        # Reserve charger slot confirmation or cancel
+        if(msg.topic == "vanetza/out/denm" and message["fields"]["denm"]
+           ["situation"]["eventType"]["causeCode"] == event["reserveSlotCharger"]):
+            if(self.freeCharges > 0):
+                self.updateEvent(event["confirmSLot"], message["fields"]
+                                 ["denm"]["management"]["actionID"]["originatingStationID"])
+                self.freeCharges -= 1
+                self.freeSlots -= 1
+            elif(self.freeCharges == 0):
+                self.updateEvent(event["cancelSlot"], message["fields"]
+                                 ["denm"]["management"]["actionID"]["originatingStationID"])
+            self.mqttc.publish("vanetza/in/denm", json.dumps(self.denm))
+        # Reserve normal slot confirmation or cancel
+        if(msg.topic == "vanetza/out/denm" and message["fields"]["denm"]
+           ["situation"]["eventType"]["causeCode"] == event["reserveSlotNormal"]):
+            if(self.freeSlots > 0):
+                self.updateEvent(event["confirmSLot"], message["fields"]
+                                 ["denm"]["management"]["actionID"]["originatingStationID"])
+                self.freeSlots -= 1
+            elif(self.freeSlots == 0):
+                self.updateEvent(event["cancelSlot"], message["fields"]
+                                 ["denm"]["management"]["actionID"]["originatingStationID"])
+            self.mqttc.publish("vanetza/in/denm", json.dumps(self.denm))
 
     def run(self, sio, sid):
         while True:

@@ -14,8 +14,9 @@ event = {
     "parkWithNormalPlace": 39,
 
     # reservation
-    "reserveSlot": 40,
-    "confirmSLot": 41,
-    "cancelSlot": 42
+    "reserveSlotCharger": 40,
+    "reserveSlotNormal": 41,
+    "confirmSLot": 42,
+    "cancelSlot": 43
 
 }

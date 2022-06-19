@@ -1,24 +1,8 @@
-from multiprocessing import Process
-import os
+import json
 
+coords_file = open("coords.json", "r")
+coords_json = json.load(coords_file)
+coords_file.close()
 
-def info(title):
-    print(title)
-    print('process id:', os.getpid())
-
-
-def f(name):
-
-    while True:
-        info('function f')
-        print('hello', name)
-
-
-if __name__ == '__main__':
-    info('main line')
-    p = Process(target=f, args=('bob',))
-    l = Process(target=f, args=('rui',))
-    p.start()
-    l.start()
-    p.join()
-    l.join()
+for i in coords_json:
+    print(coords_json[i]["latitude"])
