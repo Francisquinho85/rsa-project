@@ -46,6 +46,30 @@ th, td {
   padding-left: 42px;
 }
 
+.column100.column1.obu1 {
+  background-color: blue;
+}
+
+.column100.column1.obu2 {
+  background-color: green;
+}
+
+.column100.column1.obu3 {
+  background-color: red;
+}
+
+.column100.column1.obu4 {
+  background-color: orange;
+}
+
+.column100.column1.obu5 {
+  background-color: black;
+}
+
+.column100.column1.obu6 {
+  background-color: pink;
+}
+
 .row100.head th {
   padding-top: 24px;
   padding-bottom: 20px;
