@@ -38,12 +38,17 @@ th, td {
 
 .column100 {
   width: 130px;
-  padding-left: 25px;
+  padding: 10px;
+  text-align: center;
+}
+
+.column100.column2 {
+  width: 60px;
 }
 
 .column100.column3 {
   width: 265px;
-  padding-left: 42px;
+  padding: 32px;
 }
 
 .column100.column1.obu1 {

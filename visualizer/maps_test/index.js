@@ -155,8 +155,10 @@ sio.on('reserve_slot', (data, cb) => {
     } 
     else if(data.changePlace)
     {
+        slotString = data.rsuName + "Slot" + data.slot + "Location";
         window[rsuString][parseInt(data.slot)] = data.obuName;
         window[rsuString][2] = "";
+        window[data.obuName].setPosition(window[slotString]);
         console.log(data.obuName + " changing from slot 2 to slot " + data.slot + " in " + data.rsuName);
     }
     else 
