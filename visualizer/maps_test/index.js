@@ -5,7 +5,6 @@ var rsu2Slot1Location, rsu2Slot2Location, rsu2Slot3Location;
 var rsu1Slots;
 var rsu2Slots;
 
-
 function initMap() {
     const aveiro = { lat: 40.632728, lng: -8.65702 };
     var mapProp = {
@@ -70,12 +69,10 @@ function startSim() {
     document.getElementById("verTable").style.display = "table";
     rsu1FreeSlots = 3;
     rsu2FreeSlots = 3;
+
     obu1 = new google.maps.Marker({
         map: map,
-        icon: {
-            url: 'images/car-icon.png',
-            scaledSize: new google.maps.Size(40, 40)
-        },
+        icon: google.maps.SymbolPath.directions_car,
         zIndex: google.maps.Marker.MAX_ZINDEX
     });
 
@@ -83,46 +80,47 @@ function startSim() {
         map: map,
         icon: {
             url: 'images/car-icon.png',
-            scaledSize: new google.maps.Size(40, 40)
+            scaledSize: new google.maps.Size(40, 40),
+            fillColor: #0000ff
         },
         zIndex: google.maps.Marker.MAX_ZINDEX
     });
 
-    obu3 = new google.maps.Marker({
-        map: map,
-        icon: {
-            url: 'images/car-icon.png',
-            scaledSize: new google.maps.Size(40, 40)
-        },
-        zIndex: google.maps.Marker.MAX_ZINDEX
-    });
+    // obu3 = new google.maps.Marker({
+    //     map: map,
+    //     icon: {
+    //         url: 'images/car-icon.png',
+    //         scaledSize: new google.maps.Size(40, 40)
+    //     },
+    //     zIndex: google.maps.Marker.MAX_ZINDEX
+    // });
 
-    obu4 = new google.maps.Marker({
-        map: map,
-        icon: {
-            url: 'images/car-icon.png',
-            scaledSize: new google.maps.Size(40, 40)
-        },
-        zIndex: google.maps.Marker.MAX_ZINDEX
-    });
+    // obu4 = new google.maps.Marker({
+    //     map: map,
+    //     icon: {
+    //         url: 'images/car-icon.png',
+    //         scaledSize: new google.maps.Size(40, 40)
+    //     },
+    //     zIndex: google.maps.Marker.MAX_ZINDEX
+    // });
 
-    obu5 = new google.maps.Marker({
-        map: map,
-        icon: {
-            url: 'images/car-icon.png',
-            scaledSize: new google.maps.Size(40, 40)
-        },
-        zIndex: google.maps.Marker.MAX_ZINDEX
-    });
+    // obu5 = new google.maps.Marker({
+    //     map: map,
+    //     icon: {
+    //         url: 'images/car-icon.png',
+    //         scaledSize: new google.maps.Size(40, 40)
+    //     },
+    //     zIndex: google.maps.Marker.MAX_ZINDEX
+    // });
 
-    obu6 = new google.maps.Marker({
-        map: map,
-        icon: {
-            url: 'images/car-icon.png',
-            scaledSize: new google.maps.Size(40, 40)
-        },
-        zIndex: google.maps.Marker.MAX_ZINDEX
-    });
+    // obu6 = new google.maps.Marker({
+    //     map: map,
+    //     icon: {
+    //         url: 'images/car-icon.png',
+    //         scaledSize: new google.maps.Size(40, 40)
+    //     },
+    //     zIndex: google.maps.Marker.MAX_ZINDEX
+    // });
 }
 
 function updateBattery(name, battery) {
@@ -170,7 +168,14 @@ sio.on('reserve_slot', (data, cb) => {
     if(data.obuName == "obuNone")
     {
         window[rsuString][parseInt(data.slot)] = "";
-    } else 
+    } 
+    else if(data.changePlace)
+    {
+        window[rsuString][parseInt(data.slot)] = data.obuName;
+        window[rsuString][2] = "";
+        console.log(data.obuName + " changing from slot 2 to slot " + data.slot + " in " + data.rsuName);
+    }
+    else 
     {
         window[rsuString][parseInt(data.slot)] = data.obuName;
         console.log("Reserve slot " + data.slot + " of " + data.rsuName + " for " + data.obuName);
