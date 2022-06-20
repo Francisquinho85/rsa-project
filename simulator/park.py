@@ -14,6 +14,8 @@ class Park:
         self.latitude = latitude
         self.longitude = longitude
         self.carList = []
+        for i in range(slots):
+            self.carList.append(None)
         self.cam = cam
         self.denm = denm
         self.ip = ip
@@ -61,29 +63,37 @@ class Park:
         if(msg.topic == "vanetza/out/denm" and message["fields"]["denm"]
            ["situation"]["eventType"]["subCauseCode"] == self.id):
             if(message["fields"]["denm"]
-            ["situation"]["eventType"]["causeCode"] == event["reserveSlotCharger"]):
+               ["situation"]["eventType"]["causeCode"] == event["reserveSlotCharger"]):
                 if(self.freeCharges > 0):
                     self.updateEvent(event["confirmSlot"], message["fields"]
-                                    ["denm"]["management"]["actionID"]["originatingStationID"])
+                                     ["denm"]["management"]["actionID"]["originatingStationID"])
                     self.freeCharges -= 1
                     self.freeSlots -= 1
-                    self.mqttc.publish("vanetza/in/denm", json.dumps(self.denm))
+                    for c in range(self.charges):
+                        if(self.carList[c] == None):
+                            self.carList[c] = message["fields"]
+                            ["denm"]["management"]["actionID"]["originatingStationID"]
                     print(self.name + " Confirming slot charger")
                 elif(self.freeCharges == 0):
                     self.updateEvent(event["cancelSlot"], message["fields"]
-                                    ["denm"]["management"]["actionID"]["originatingStationID"])
+                                     ["denm"]["management"]["actionID"]["originatingStationID"])
                     print(self.name + " Canceling slot charger")
+                self.mqttc.publish("vanetza/in/denm", json.dumps(self.denm))
             # Reserve normal slot confirmation or cancel
             if(message["fields"]["denm"]
-            ["situation"]["eventType"]["causeCode"] == event["reserveSlotNormal"]):
+               ["situation"]["eventType"]["causeCode"] == event["reserveSlotNormal"]):
                 print("RSU Confirming slot normal")
                 if(self.freeSlots > 0):
                     self.updateEvent(event["confirmSlot"], message["fields"]
-                                    ["denm"]["management"]["actionID"]["originatingStationID"])
+                                     ["denm"]["management"]["actionID"]["originatingStationID"])
                     self.freeSlots -= 1
+                    for c in range(self.charges, self.slots):
+                        if(self.carList[c] == None):
+                            self.carList[c] = message["fields"]
+                            ["denm"]["management"]["actionID"]["originatingStationID"]
                 elif(self.freeSlots == 0):
                     self.updateEvent(event["cancelSlot"], message["fields"]
-                                    ["denm"]["management"]["actionID"]["originatingStationID"])
+                                     ["denm"]["management"]["actionID"]["originatingStationID"])
                 self.mqttc.publish("vanetza/in/denm", json.dumps(self.denm))
 
     def run(self, sio, sid):

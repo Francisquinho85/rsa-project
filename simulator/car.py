@@ -84,7 +84,7 @@ class Car:
                     self.slotReserved = True
             # Receive park confirm or cancel
             print(message["fields"]["denm"]
-                    ["situation"]["eventType"]["subCauseCode"])
+                  ["situation"]["eventType"]["subCauseCode"])
             if(message["fields"]["denm"]
                     ["situation"]["eventType"]["subCauseCode"] == self.id):
                 print("Receive park confirm or cancel")
@@ -110,46 +110,46 @@ class Car:
         parkLocation = self.getParkLocation(coords_json)
         reverse = False
         print("Going to the park " + self.name)
-        #Check which direction is faster
+        # Check which direction is faster
         print(parkLocation, self.location)
 
         if(parkLocation > self.location):
             if((parkLocation - self.location) < (self.location + (135 - parkLocation))):
                 reverse = False
-            else:    
+            else:
                 reverse = True
         else:
             if((self.location - parkLocation) < (parkLocation + (135 - self.location))):
                 reverse = True
             else:
                 reverse = False
-        
+
         while True:
-            #Check if arrived to the park
+            # Check if arrived to the park
             if(self.location == parkLocation):
                 break
 
-            #Drive to park in the fastest direction
+            # Drive to park in the fastest direction
             if(reverse):
                 self.location -= 1
             else:
                 self.location += 1
-            
-            #Decrease battery percentage
+
+            # Decrease battery percentage
             self.battery -= randint(0, 3)
 
-            #Check if is in the position limits
+            # Check if is in the position limits
             if(self.location > 135):
                 self.location = 0
             elif(self.location < 0):
                 self.location = 135
-            
-            #Update Coordinates
+
+            # Update Coordinates
             self.updateLocation((float)(coords_json[str(self.location)]["latitude"]), (float)(
                 coords_json[str(self.location)]["longitude"]))
             self.mqttc.publish("vanetza/in/cam", json.dumps(self.cam))
-            
-            #Send new coordinates to frontend
+
+            # Send new coordinates to frontend
             result = sio.call(
                 'send_coords', self.sendLocation(), to=sid)
             time.sleep(1)
@@ -157,6 +157,7 @@ class Car:
     def enterThePark(self, sio, sid, coords_json, desiredBattery):
         isCharged = False
         print("Entered the park " + self.name)
+
         while True:
             if(self.battery == desiredBattery):
                 break
@@ -171,7 +172,7 @@ class Car:
         self.parkLatitude = 0
         self.parkLongitude = 0
         result = sio.call(
-                'send_coords', self.sendLocation(), to=sid)
+            'send_coords', self.sendLocation(), to=sid)
 
     def run(self, sio, sid, coords_json):
         self.mqttc.publish("vanetza/in/cam", json.dumps(self.cam))

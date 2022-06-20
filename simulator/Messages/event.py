@@ -17,6 +17,9 @@ event = {
     "reserveSlotCharger": 40,
     "reserveSlotNormal": 41,
     "confirmSlot": 42,
-    "cancelSlot": 43
+    "cancelSlot": 43,
 
+    # park slots
+    "changeToCharger": 44,
+    "exitPark": 45
 }
