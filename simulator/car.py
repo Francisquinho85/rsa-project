@@ -103,8 +103,8 @@ class Car:
 
     def getParkLocation(self, coords_json):
         for i in coords_json:
-            if(coords_json[i]["latitude"] == self.parkLatitude and coords_json[i]["longitude"] == self.parkLongitude):
-                return i
+            if((float)(coords_json[i]["latitude"]) == self.parkLatitude and (float)(coords_json[i]["longitude"]) == self.parkLongitude):
+                return (int)(i)
 
     def goToThePark(self, sio, sid, coords_json):
         parkLocation = self.getParkLocation(coords_json)
@@ -163,8 +163,8 @@ class Car:
             self.battery += 10
             if self.battery >= 100:
                 self.battery = 100
-            time.sleep(1)
             result = sio.call('enter_park', self.sendLocation(), to=sid)
+            time.sleep(1)
 
     def leaveThePark(self, sio, sid, coords_json):
         print("Leaving the park " + self.name)
