@@ -156,7 +156,7 @@ sio.on('enter_park', (data, cb) => {
     }
     slotString = data.rsuName + "Slot" + tmp + "Location";
     window[data.obuName].setPosition(window[slotString]);
-    updateBattery(data.name, data.battery);
+    updateBattery(data.obuName, data.battery);
     cb("Success")
 });
 
