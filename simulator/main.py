@@ -78,12 +78,13 @@ def main(sid, sio):
                 copy.deepcopy(denm_json), "192.168.98.10", "rsu1", 1)
     rsu1.updateLocation()
     rsus.append(rsu1)
+    print(rsu1.latitude, " ", rsu1.longitude)
 
     rsu2 = Park(3, 2, (float)(coords_json[str(48)]["latitude"]), (float)(coords_json[str(48)]["longitude"]), copy.deepcopy(cam_json),
                 copy.deepcopy(denm_json), "192.168.98.11", "rsu2", 2)
     rsu2.updateLocation()
     rsus.append(rsu2)
-
+    print(rsu2.latitude, " ", rsu2.longitude)
     # while True:
     #     for obu in obus:
     #         obu.location += 1
