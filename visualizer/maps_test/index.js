@@ -54,12 +54,12 @@ function initMap() {
         },
     });
 
-    rsu1Slot1Location = new google.maps.LatLng(40.63602, -8.66030);
-    rsu1Slot2Location = new google.maps.LatLng(40.63629, -8.66030);
-    rsu1Slot3Location = new google.maps.LatLng(40.63655, -8.66030);
+    rsu1Slot0Location = new google.maps.LatLng(40.63602, -8.66030);
+    rsu1Slot1Location = new google.maps.LatLng(40.63629, -8.66030);
+    rsu1Slot2Location = new google.maps.LatLng(40.63655, -8.66030);
+    rsu2Slot0Location = new google.maps.LatLng(40.62827, -8.65456);
     rsu2Slot1Location = new google.maps.LatLng(40.62837, -8.65456);
-    rsu2Slot2Location = new google.maps.LatLng(40.62837, -8.65456);
-    rsu2Slot3Location = new google.maps.LatLng(40.62837, -8.65456);
+    rsu2Slot2Location = new google.maps.LatLng(40.62857, -8.65456);
     rsu1Slots = new Array(3).fill("");
     rsu2Slots = new Array(3).fill("");
 }
