@@ -167,7 +167,7 @@ sio.on('send_battery', (data,cb) => {
 
 sio.on('reserve_slot', (data, cb) => {
     rsuString = data.rsuName + "Slots";
-    window[rsuString][parseInt(data.slot) - 1] = data.obuName;
+    window[rsuString][parseInt(data.slot)] = data.obuName;
     console.log("Reserve slot " + data.slot + " of " + data.rsuName + " for " + data.obuName);
     cb("Success")
 });
