@@ -85,7 +85,7 @@ class Car:
                     ["situation"]["eventType"]["causeCode"] == event["parkStatus"] and not self.normalSlotReserved and not self.chargerSlotReserved):
                 if(message["fields"]["denm"]
                         ["situation"]["eventType"]["subCauseCode"] == event["parkWithChargerPlace"]):
-                    print("Reserving Charger slot")
+                    print("Reserving Charger slot " + self.name)
                     self.updateEvent(event["reserveSlotCharger"], message["fields"]
                                      ["denm"]["management"]["actionID"]["originatingStationID"])
                     self.mqttc.publish("vanetza/in/denm",
@@ -93,7 +93,7 @@ class Car:
                     self.chargerSlotReserved = True
                 elif(message["fields"]["denm"]
                         ["situation"]["eventType"]["subCauseCode"] == event["parkWithNormalPlace"]):
-                    print("Reserving Normal slot")
+                    print("Reserving Normal slot " + self.name)
                     self.updateEvent(event["reserveSlotNormal"], message["fields"]
                                      ["denm"]["management"]["actionID"]["originatingStationID"])
                     self.mqttc.publish("vanetza/in/denm",
@@ -102,7 +102,7 @@ class Car:
             # Receive park confirm or cancel
             if(message["fields"]["denm"]
                     ["situation"]["eventType"]["subCauseCode"] == self.id):
-                print("Receive park confirm or cancel")
+                print("Receive park confirm or cancel " + self.name)
                 if(message["fields"]["denm"]
                         ["situation"]["eventType"]["causeCode"] == event["confirmSlot"]):
                     print("Slot Confirmed for " + self.name)
@@ -118,12 +118,13 @@ class Car:
                     self.chargerSlotReserved = False
                     self.normalSlotReserved = False
                     a = 0  # TODO normal life
-                if(message["fields"]["denm"]
-                        ["situation"]["eventType"]["causeCode"] == event["changeToCharger"]):
-                    print("Slot Change for " + self.name)
-                    self.chargerSlotReserved = True
-                    self.normalSlotReserved = False
-                    a = 0  # TODO change place
+        if(msg.topic == "vanetza/out/denm" and message["fields"]["denm"]
+           ["situation"]["eventType"]["subCauseCode"] == self.id and message["fields"]["denm"]
+                ["situation"]["eventType"]["causeCode"] == event["changeToCharger"]):
+            print("Slot Change for " + self.name)
+            self.chargerSlotReserved = True
+            self.normalSlotReserved = False
+            a = 0  # TODO change place
 
     def getParkLocation(self, coords_json):
         for i in coords_json:
@@ -181,7 +182,8 @@ class Car:
         isCharged = False
         print("Entered the park " + self.name)
         result = sio.call('enter_park', self.sendPark(), to=sid)
-        while not self.chargerSlotReserved:
+        while self.normalSlotReserved:
+            print("wait for a charger " + self.name)
             time.sleep(1)
         while True:
             if(self.battery == desiredBattery):
@@ -200,6 +202,7 @@ class Car:
         self.parkLongitude = 0
         self.parkId = None
         self.chargerSlotReserved = False
+        self.normalSlotReserved = False
         result = sio.call(
             'send_coords', self.sendLocation(), to=sid)
 

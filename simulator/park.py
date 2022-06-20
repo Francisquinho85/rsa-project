@@ -111,6 +111,7 @@ class Park:
                             self.carList[c] = self.carList[self.slots-1]
                             self.carList[self.slots-1] = None
                             self.freeCharges -= 1
+                            print("demn")
 
     def sendSlots(self, id, slot, changePlace):
         return{
@@ -130,6 +131,7 @@ class Park:
                     if(self.carList[c] == saveCarList[self.slots-1]):
                         self.updateEvent(
                             event["changeToCharger"], self.carList[c])
+                        print("change to charger car:", self.carList[c])
                         self.mqttc.publish(
                             "vanetza/in/denm", json.dumps(self.denm))
                         changePlace = 1
