@@ -139,13 +139,14 @@ sio.on('disconnect', () => {
     console.log('disconnected');
 });
 
-sio.on('send_coords', (data) => {
+sio.on('send_coords', (data, cb) => {
     var newLocation = new google.maps.LatLng(data.latitude, data.longitude);
     window[data.name].setPosition(newLocation);
     updateBattery(data.name, data.battery);
+    cb("Success")
 });
 
-sio.on('enter_park', (data) => {
+sio.on('enter_park', (data, cb) => {
     rsuString = data.rsuName + "Slots";
     var tmp;
     for(i = 0; i < window[rsuString].length; i++)
@@ -156,19 +157,22 @@ sio.on('enter_park', (data) => {
     slotString = data.rsuName + "Slot" + tmp + "Location";
     window[data.obuName].setPosition(window[slotString]);
     updateBattery(data.name, data.battery);
+    cb("Success")
 });
 
-sio.on('send_battery', (data) => {
+sio.on('send_battery', (data,cb) => {
     updateBattery(data.obuName, data.battery);
+    cb("Success")
 });
 
-sio.on('reserve_slot', (data) => {
+sio.on('reserve_slot', (data, cb) => {
     rsuString = data.rsuName + "Slots";
     window[rsuString][parseInt(data.slot) - 1] = data.obuName;
     console.log("Reserve slot " + data.slot + " of " + data.rsuName + " for " + data.obuName);
+    cb("Success")
 });
 
-sio.on('leave_park', (data) => {
+sio.on('leave_park', (data, cb) => {
     rsuString = data.rsuName + "Slots";
     for(i = 0; i < window[rsuString].length; i++)
     {
@@ -176,4 +180,5 @@ sio.on('leave_park', (data) => {
             tmp = i;
     }
     window[rsuString][i] = "";
+    cb("Success")
 });
