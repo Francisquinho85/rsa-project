@@ -1,6 +1,9 @@
 var map, rsu1, rsu2, obu1, obu2, obu3, obu4, obu5, obu6;
+var rsu1Park, rsu2Park;
 var rsu1Slot1Location, rsu1Slot2Location, rsu1Slot3Location;
 var rsu2Slot1Location, rsu2Slot2Location, rsu2Slot3Location;
+var rsu1Slots;
+var rsu2Slots;
 
 
 function initMap() {
@@ -24,7 +27,7 @@ function initMap() {
     //     }
     // });
 
-    rsu1Lot = new google.maps.Marker({
+    rsu1Park = new google.maps.Marker({
         position: lot1Location,
         map: map,
         icon: {
@@ -42,7 +45,7 @@ function initMap() {
     //     }
     // });
 
-    rsu2Lot = new google.maps.Marker({
+    rsu2Park = new google.maps.Marker({
         position: lot2Location,
         map: map,
         icon: {
@@ -57,38 +60,23 @@ function initMap() {
     rsu2Slot1Location = new google.maps.LatLng(40.62837, -8.65456);
     rsu2Slot2Location = new google.maps.LatLng(40.62837, -8.65456);
     rsu2Slot3Location = new google.maps.LatLng(40.62837, -8.65456);
-    
-    obu3 = new google.maps.Marker({
-        position: new google.maps.LatLng(40.63625, -8.65954),
-        map: map,
-        icon: {
-            url: 'images/car-icon.png',
-            scaledSize: new google.maps.Size(40, 40)
-        },
-        zIndex: google.maps.Marker.MAX_ZINDEX
-    });
-
-    obu2 = new google.maps.Marker({
-        position: new google.maps.LatLng(40.62898, -8.65522),
-        map: map,
-        icon: {
-            url: 'images/car-icon.png',
-            scaledSize: new google.maps.Size(40, 40)
-        },
-        zIndex: google.maps.Marker.MAX_ZINDEX
-    });
+    rsu1Slots = new Array(3).fill("");
+    rsu2Slots = new Array(3).fill("");
 }
 
 function startSim() {
     sio.emit('startSim');
     document.getElementById("startBtn").style.display = "none";
     document.getElementById("verTable").style.display = "table";
+    rsu1FreeSlots = 3;
+    rsu2FreeSlots = 3;
     obu1 = new google.maps.Marker({
         map: map,
         icon: {
             url: 'images/car-icon.png',
             scaledSize: new google.maps.Size(40, 40)
         },
+        zIndex: google.maps.Marker.MAX_ZINDEX
     });
 
     obu2 = new google.maps.Marker({
@@ -97,6 +85,7 @@ function startSim() {
             url: 'images/car-icon.png',
             scaledSize: new google.maps.Size(40, 40)
         },
+        zIndex: google.maps.Marker.MAX_ZINDEX
     });
 
     obu3 = new google.maps.Marker({
@@ -105,6 +94,7 @@ function startSim() {
             url: 'images/car-icon.png',
             scaledSize: new google.maps.Size(40, 40)
         },
+        zIndex: google.maps.Marker.MAX_ZINDEX
     });
 
     obu4 = new google.maps.Marker({
@@ -113,6 +103,7 @@ function startSim() {
             url: 'images/car-icon.png',
             scaledSize: new google.maps.Size(40, 40)
         },
+        zIndex: google.maps.Marker.MAX_ZINDEX
     });
 
     obu5 = new google.maps.Marker({
@@ -121,6 +112,7 @@ function startSim() {
             url: 'images/car-icon.png',
             scaledSize: new google.maps.Size(40, 40)
         },
+        zIndex: google.maps.Marker.MAX_ZINDEX
     });
 
     obu6 = new google.maps.Marker({
@@ -129,6 +121,7 @@ function startSim() {
             url: 'images/car-icon.png',
             scaledSize: new google.maps.Size(40, 40)
         },
+        zIndex: google.maps.Marker.MAX_ZINDEX
     });
 }
 
@@ -146,9 +139,41 @@ sio.on('disconnect', () => {
     console.log('disconnected');
 });
 
-sio.on('send_coords', (data, cb) => {
+sio.on('send_coords', (data) => {
     var newLocation = new google.maps.LatLng(data.latitude, data.longitude);
     window[data.name].setPosition(newLocation);
     updateBattery(data.name, data.battery);
-    cb(newLocation)
+});
+
+sio.on('enter_park', (data) => {
+    rsuString = data.rsuName + "Slots";
+    var tmp;
+    for(i = 0; i < window[rsuString].length; i++)
+    {
+        if(window[rsuString][i] == data.obuName)
+            tmp = i;
+    }
+    slotString = data.rsuName + "Slot" + tmp + "Location";
+    window[data.obuName].setPosition(window[slotString]);
+    updateBattery(data.name, data.battery);
+});
+
+sio.on('send_battery', (data) => {
+    updateBattery(data.obuName, data.battery);
+});
+
+sio.on('reserve_slot', (data) => {
+    rsuString = data.rsuName + "Slots";
+    window[rsuString][parseInt(data.slot) - 1] = data.obuName;
+    console.log("Reserve slot " + data.slot + " of " + data.rsuName + " for " + data.obuName);
+});
+
+sio.on('leave_park', (data) => {
+    rsuString = data.rsuName + "Slots";
+    for(i = 0; i < window[rsuString].length; i++)
+    {
+        if(window[rsuString][i] == data.obuName)
+            tmp = i;
+    }
+    window[rsuString][i] = "";
 });
