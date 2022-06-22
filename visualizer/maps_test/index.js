@@ -1,4 +1,4 @@
-var map, rsu1, rsu2, obu1, obu2, obu3, obu4, obu5, obu6;
+var map, rsu1, rsu2, obu1, obu2, obu3, obu4, obu5, obu6, obu7, obu8;
 var rsu1Park, rsu2Park;
 var rsu1Slot0Location, rsu1Slot1Location, rsu1Slot2Location;
 var rsu2Slot0Location, rsu2Slot1Location, rsu2Slot2Location;
@@ -100,7 +100,25 @@ function startSim() {
     obu6 = new google.maps.Marker({
         map: map,
         icon: {
-            url: 'images/obu-pink.png',
+            url: 'images/obu-light-pink.png',
+            scaledSize: new google.maps.Size(40, 40)
+        },
+        zIndex: google.maps.Marker.MAX_ZINDEX
+    });
+
+    obu7 = new google.maps.Marker({
+        map: map,
+        icon: {
+            url: 'images/obu-light-blue.png',
+            scaledSize: new google.maps.Size(40, 40)
+        },
+        zIndex: google.maps.Marker.MAX_ZINDEX
+    });
+
+    obu8 = new google.maps.Marker({
+        map: map,
+        icon: {
+            url: 'images/obu-purple.png',
             scaledSize: new google.maps.Size(40, 40)
         },
         zIndex: google.maps.Marker.MAX_ZINDEX
@@ -109,6 +127,13 @@ function startSim() {
 
 function updateBattery(name, battery) {
     document.getElementById(name + 'batt').innerHTML = battery + '%';
+}
+
+function updateMessage(name, message, inBool) {
+    if(inBool)
+        document.getElementById(name + "In").innerHTML = message;
+    else
+        document.getElementById(name + "Out").innerHTML = message;
 }
 
 const sio = io();
@@ -139,6 +164,7 @@ sio.on('enter_park', (data, cb) => {
     slotString = data.rsuName + "Slot" + tmp + "Location";
     window[data.obuName].setPosition(window[slotString]);
     updateBattery(data.obuName, data.battery);
+    updateMessage(data.obuName, "Entering the park", 0);
     cb("Success")
 });
 
@@ -151,6 +177,7 @@ sio.on('reserve_slot', (data, cb) => {
     rsuString = data.rsuName + "Slots";
     if(data.obuName == "obuNone")
     {
+        updateMessage(window[rsuString][[parseInt(data.slot)]], "Leaving the park", 0);
         window[rsuString][parseInt(data.slot)] = "";
     } 
     else if(data.changePlace)
@@ -160,11 +187,13 @@ sio.on('reserve_slot', (data, cb) => {
         window[rsuString][2] = "";
         window[data.obuName].setPosition(window[slotString]);
         console.log(data.obuName + " changing from slot 2 to slot " + data.slot + " in " + data.rsuName);
+        updateMessage(data.obuName, "Switching from slot 2 to slot " + data.slot, 0);
     }
     else 
     {
         window[rsuString][parseInt(data.slot)] = data.obuName;
         console.log("Reserve slot " + data.slot + " of " + data.rsuName + " for " + data.obuName);
+        updateMessage(data.obuName, "Reserve slot " + data.slot + " of " + data.rsuName + " for " + data.obuName, 0);
     }
     cb("Success")
 });
