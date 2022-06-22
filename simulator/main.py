@@ -6,19 +6,19 @@ import json
 import threading
 from simulator.car import Car
 from simulator.park import Park
-from simulator.Messages.event import event
+from simulator.messages.event import event
 
 
 # The callback for when a PUBLISH message is received from the server.
 def main(sid, sio):
     print(sid)
-    denm_file = open("simulator/Messages/denm.json", "r")
+    denm_file = open("simulator/messages/denm.json", "r")
     denm_json = json.load(denm_file)
     denm_file.close()
-    cam_file = open("simulator/Messages/cam.json", "r")
+    cam_file = open("simulator/messages/cam.json", "r")
     cam_json = json.load(cam_file)
     cam_file.close()
-    coords_file = open("simulator/coords.json", "r")
+    coords_file = open("simulator/coords/coords.json", "r")
     coords_json = json.load(coords_file)
     coords_file.close()
 

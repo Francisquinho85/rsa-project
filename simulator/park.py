@@ -1,7 +1,7 @@
 from time import sleep
 import paho.mqtt.client as mqtt
 import json
-from simulator.Messages.event import event
+from simulator.messages.event import event
 import time
 
 
