@@ -6,7 +6,7 @@ from simulator.messages.event import event
 from simulator.utils import *
 
 class Park:
-    def __init__(self, slots, charges, latitude, longitude, cam, denm, ip, name, id):
+    def __init__(self, slots, charges, latitude, longitude, cam, denm, ip, name, id, sid, sio):
         self.slots = slots
         self.charges = charges
         self.freeCharges = charges
@@ -30,6 +30,8 @@ class Park:
         self.cam["stationType"] = 15
         self.denm["management"]["actionID"]["originatingStationID"] = id
         self.denm["management"]["stationType"] = 15
+        self.sid = sid
+        self.sio = sio
 
     def updateLocation(self):
         self.denm["management"]["eventPosition"]["latitude"] = self.latitude
@@ -48,17 +50,23 @@ class Park:
     def on_message(self, client, userdata, msg):
         message = json.loads(msg.payload.decode())
         if(msg.topic == "vanetza/out/denm" and getCauseCode(message) == event["batteryStatus"]):
+            result = self.sio.call('send_message', self.sendMessage("Receive denm batteryStatus to obu" + str(getId(message))), to=self.sid)
             print("Sending Park status " , self.name , " free " , self.freeCharges  , " slots " , self.freeSlots , " " , self.carList)
             if(self.freeCharges > 0):
                 self.updateEvent(event["parkStatus"], event["parkWithChargerPlace"])
+                result = self.sio.call('send_message', self.sendMessage("Send denm parkWithChargerPlace to obu" + str(getId(message))), to=self.sid)
             elif(self.freeSlots > 0):
                 self.updateEvent(event["parkStatus"], event["parkWithNormalPlace"])
+                result = self.sio.call('send_message', self.sendMessage("Send denm parkWithNormalPlace to obu" + str(getId(message))), to=self.sid)
             else:
                 self.updateEvent(event["parkStatus"], event["parkFull"])
+                result = self.sio.call('send_message', self.sendMessage("Send denm parkFull to obu" + str(getId(message))), to=self.sid)
             self.mqttc.publish("vanetza/in/denm", json.dumps(self.denm))
         # Reserve charger slot confirmation or cancel
         if(msg.topic == "vanetza/out/denm" and getSubCauseCode(message) == self.id):
+            
             if(getCauseCode(message) == event["reserveSlotCharger"]):
+                result = self.sio.call('send_message', self.sendMessage("Receive denm reserveSlotCharger to obu" + str(getId(message))), to=self.sid)
                 if(self.freeCharges > 0):
                     self.updateEvent(event["confirmSlot"], getId(message))
                     self.freeCharges -= 1
@@ -67,13 +75,17 @@ class Park:
                         if(self.carList[c] == None):
                             self.carList[c] = getId(message)
                             break
+                    result = self.sio.call('send_message', self.sendMessage("Send denm confirmSlot to obu" + str(getId(message))), to=self.sid)
                     print(self.name + " Confirming slot charger")
                 elif(self.freeCharges == 0):
                     self.updateEvent(event["cancelSlot"], getId(message))
                     print(self.name + " Canceling slot charger")
+                    result = self.sio.call('send_message', self.sendMessage("Send denm cancelSlot to obu" + str(getId(message))), to=self.sid)
                 self.mqttc.publish("vanetza/in/denm", json.dumps(self.denm))
             # Reserve normal slot confirmation or cancel
+            
             if(getCauseCode(message) == event["reserveSlotNormal"]):
+                result = self.sio.call('send_message', self.sendMessage("Receive denm reserveSlotNormal to obu" + str(getId(message))), to=self.sid)
                 print("RSU Confirming slot normal")
                 if(self.freeSlots > 0):
                     self.updateEvent(event["confirmSlot"],getId(message))
@@ -82,8 +94,10 @@ class Park:
                         if(self.carList[c] == None):
                             self.carList[c] = getId(message)
                             break
+                    result = self.sio.call('send_message', self.sendMessage("Send denm confirmSlot to obu" + str(getId(message))), to=self.sid)
                 elif(self.freeSlots == 0):
                     self.updateEvent(event["cancelSlot"], getId(message))
+                    result = self.sio.call('send_message', self.sendMessage("Send denm cancelSlot to obu" + str(getId(message))), to=self.sid)
                 self.mqttc.publish("vanetza/in/denm", json.dumps(self.denm))
             if(getCauseCode(message) == event["exitPark"]):
                 print("Car exit park")
@@ -107,7 +121,13 @@ class Park:
             "changePlace": changePlace
         }
 
-    def run(self, sio, sid):
+    def sendMessage(self, message):
+        return {
+            "name": self.name,
+            "message": message
+        }
+
+    def run(self):
         self.mqttc.publish("vanetza/in/cam", json.dumps(self.cam))
         saveCarList = self.carList.copy()
         while True:
@@ -119,8 +139,10 @@ class Park:
                         self.updateEvent(event["changeToCharger"], self.carList[c])
                         self.mqttc.publish("vanetza/in/denm", json.dumps(self.denm))
                         changePlace = 1
-                    result = sio.call('reserve_slot', self.sendSlots(self.carList[c], c, changePlace), to=sid)
+                        result = self.sio.call('send_message', self.sendMessage("Send denm reserveSlotNormal to obu" + str(self.carList[c])), to=self.sid)
+                    result = self.sio.call('reserve_slot', self.sendSlots(self.carList[c], c, changePlace), to=self.sid)
                     saveCarList = self.carList.copy()
-                    # print(self.carList)
-            print(self.name , " " , self.carList)
-            time.sleep(0.1)
+                    print(self.name , " " , self.carList) # print(self.carList)
+            # print(self.name , " " , self.carList)
+            # self.mqttc.publish("vanetza/in/cam", json.dumps(self.cam))
+            time.sleep(0.2)

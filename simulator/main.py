@@ -21,7 +21,7 @@ def main(sid, sio):
     obus = []
 
     obu1 = Car(copy.deepcopy(cam_json),
-               copy.deepcopy(denm_json), "192.168.98.20", "obu1", 1)
+               copy.deepcopy(denm_json), "192.168.98.20", "obu1", 1, sid, sio)
     obu1.location = randint(0, 135)
     obu1.updateLocation((float)(coords_json[str(obu1.location)]["latitude"]), (float)(
         coords_json[str(obu1.location)]["longitude"]))
@@ -29,7 +29,7 @@ def main(sid, sio):
     obus.append(obu1)
 
     obu2 = Car(copy.deepcopy(cam_json),
-               copy.deepcopy(denm_json), "192.168.98.21", "obu2", 2)
+               copy.deepcopy(denm_json), "192.168.98.21", "obu2", 2, sid, sio)
     obu2.location = randint(0, 135)
     obu2.updateLocation((float)(coords_json[str(obu2.location)]["latitude"]), (float)(
         coords_json[str(obu2.location)]["longitude"]))
@@ -37,7 +37,7 @@ def main(sid, sio):
     obus.append(obu2)
 
     obu3 = Car(copy.deepcopy(cam_json),
-               copy.deepcopy(denm_json), "192.168.98.22", "obu3", 3)
+               copy.deepcopy(denm_json), "192.168.98.22", "obu3", 3, sid, sio)
     obu3.location = randint(0, 135)
     obu3.updateLocation((float)(coords_json[str(obu3.location)]["latitude"]), (float)(
         coords_json[str(obu3.location)]["longitude"]))
@@ -45,7 +45,7 @@ def main(sid, sio):
     obus.append(obu3)
 
     obu4 = Car(copy.deepcopy(cam_json),
-               copy.deepcopy(denm_json), "192.168.98.23", "obu4", 4)
+               copy.deepcopy(denm_json), "192.168.98.23", "obu4", 4, sid, sio)
     obu4.location = randint(0, 135)
     obu4.updateLocation((float)(coords_json[str(obu4.location)]["latitude"]), (float)(
         coords_json[str(obu4.location)]["longitude"]))
@@ -53,7 +53,7 @@ def main(sid, sio):
     obus.append(obu4)
 
     obu5 = Car(copy.deepcopy(cam_json),
-               copy.deepcopy(denm_json), "192.168.98.24", "obu5", 5)
+               copy.deepcopy(denm_json), "192.168.98.24", "obu5", 5, sid, sio)
     obu5.location = randint(0, 135)
     obu5.updateLocation((float)(coords_json[str(obu5.location)]["latitude"]), (float)(
         coords_json[str(obu5.location)]["longitude"]))
@@ -61,7 +61,7 @@ def main(sid, sio):
     obus.append(obu5)
 
     obu6 = Car(copy.deepcopy(cam_json),
-               copy.deepcopy(denm_json), "192.168.98.25", "obu6", 6)
+               copy.deepcopy(denm_json), "192.168.98.25", "obu6", 6, sid, sio)
     obu6.location = randint(0, 135)
     obu6.updateLocation((float)(coords_json[str(obu6.location)]["latitude"]), (float)(
         coords_json[str(obu6.location)]["longitude"]))
@@ -69,7 +69,7 @@ def main(sid, sio):
     obus.append(obu6)
 
     obu7 = Car(copy.deepcopy(cam_json),
-               copy.deepcopy(denm_json), "192.168.98.26", "obu7", 6)
+               copy.deepcopy(denm_json), "192.168.98.26", "obu7", 7, sid, sio)
     obu7.location = randint(0, 135)
     obu7.updateLocation((float)(coords_json[str(obu7.location)]["latitude"]), (float)(
         coords_json[str(obu7.location)]["longitude"]))
@@ -77,7 +77,7 @@ def main(sid, sio):
     obus.append(obu7)
 
     obu8 = Car(copy.deepcopy(cam_json),
-               copy.deepcopy(denm_json), "192.168.98.27", "obu8", 6)
+               copy.deepcopy(denm_json), "192.168.98.27", "obu8", 8, sid, sio)
     obu8.location = randint(0, 135)
     obu8.updateLocation((float)(coords_json[str(obu8.location)]["latitude"]), (float)(
         coords_json[str(obu8.location)]["longitude"]))
@@ -87,13 +87,13 @@ def main(sid, sio):
     rsus = []
 
     rsu1 = Park(3, 2, (float)(coords_json[str(7)]["latitude"]), (float)(coords_json[str(7)]["longitude"]), copy.deepcopy(cam_json),
-                copy.deepcopy(denm_json), "192.168.98.10", "rsu1", 1)
+                copy.deepcopy(denm_json), "192.168.98.10", "rsu1", 1, sid, sio)
     rsu1.updateLocation()
     rsus.append(rsu1)
     print(rsu1.latitude, " ", rsu1.longitude)
 
     rsu2 = Park(3, 2, (float)(coords_json[str(48)]["latitude"]), (float)(coords_json[str(48)]["longitude"]), copy.deepcopy(cam_json),
-                copy.deepcopy(denm_json), "192.168.98.11", "rsu2", 2)
+                copy.deepcopy(denm_json), "192.168.98.11", "rsu2", 2, sid, sio)
     rsu2.updateLocation()
     rsus.append(rsu2)
     print(rsu2.latitude, " ", rsu2.longitude)
@@ -119,11 +119,11 @@ def main(sid, sio):
     #     sleep(1)
     proc = []
     for obu in obus:
-        p = threading.Thread(target=obu.run, args=(sio, sid, coords_json))
+        p = threading.Thread(target=obu.run, args=(0 ,coords_json))
         proc.append(p)
 
     for rsu in rsus:
-        p = threading.Thread(target=rsu.run, args=(sio, sid))
+        p = threading.Thread(target=rsu.run, args=())
         proc.append(p)
 
     for p in proc:
