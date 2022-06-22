@@ -55,7 +55,7 @@ function startSim() {
     obu1 = new google.maps.Marker({
         map: map,
         icon: {
-            url: 'images/obu-blue.png',
+            url: 'images/obu1.png',
             scaledSize: new google.maps.Size(40, 40),
         },
         zIndex: google.maps.Marker.MAX_ZINDEX
@@ -64,7 +64,7 @@ function startSim() {
     obu2 = new google.maps.Marker({
         map: map,
         icon: {
-            url: 'images/obu-green.png',
+            url: 'images/obu2.png',
             scaledSize: new google.maps.Size(40, 40),
         },
         zIndex: google.maps.Marker.MAX_ZINDEX
@@ -73,7 +73,7 @@ function startSim() {
     obu3 = new google.maps.Marker({
         map: map,
         icon: {
-            url: 'images/obu-red.png',
+            url: 'images/obu3.png',
             scaledSize: new google.maps.Size(40, 40)
         },
         zIndex: google.maps.Marker.MAX_ZINDEX
@@ -82,7 +82,7 @@ function startSim() {
     obu4 = new google.maps.Marker({
         map: map,
         icon: {
-            url: 'images/obu-orange.png',
+            url: 'images/obu4.png',
             scaledSize: new google.maps.Size(40, 40)
         },
         zIndex: google.maps.Marker.MAX_ZINDEX
@@ -91,7 +91,7 @@ function startSim() {
     obu5 = new google.maps.Marker({
         map: map,
         icon: {
-            url: 'images/obu-black.png',
+            url: 'images/obu5.png',
             scaledSize: new google.maps.Size(40, 40)
         },
         zIndex: google.maps.Marker.MAX_ZINDEX
@@ -100,7 +100,7 @@ function startSim() {
     obu6 = new google.maps.Marker({
         map: map,
         icon: {
-            url: 'images/obu-light-pink.png',
+            url: 'images/obu6.png',
             scaledSize: new google.maps.Size(40, 40)
         },
         zIndex: google.maps.Marker.MAX_ZINDEX
@@ -109,7 +109,7 @@ function startSim() {
     obu7 = new google.maps.Marker({
         map: map,
         icon: {
-            url: 'images/obu-light-blue.png',
+            url: 'images/obu7.png',
             scaledSize: new google.maps.Size(40, 40)
         },
         zIndex: google.maps.Marker.MAX_ZINDEX
@@ -118,7 +118,7 @@ function startSim() {
     obu8 = new google.maps.Marker({
         map: map,
         icon: {
-            url: 'images/obu-purple.png',
+            url: 'images/obu8.png',
             scaledSize: new google.maps.Size(40, 40)
         },
         zIndex: google.maps.Marker.MAX_ZINDEX
@@ -130,8 +130,12 @@ function updateBattery(name, battery) {
 }
 
 function updateMessage(name, message) {
+    document.getElementById(name + "In").innerHTML = message;
+}
 
-        document.getElementById(name + "In").innerHTML = message;
+function updateSlots(rsu, obu, slot) {
+    imageString = "images/" + obu + ".png"
+    document.getElementById(rsu + "Slot" + slot).src = imageString
 }
 
 const sio = io();
@@ -162,7 +166,7 @@ sio.on('enter_park', (data, cb) => {
     slotString = data.rsuName + "Slot" + tmp + "Location";
     window[data.obuName].setPosition(window[slotString]);
     updateBattery(data.obuName, data.battery);
-    updateMessage(data.obuName, "Entering the park", 0);
+    //updateMessage(data.obuName, "Entering the park", 0);
     cb("Success")
 });
 
@@ -171,11 +175,17 @@ sio.on('send_battery', (data,cb) => {
     cb("Success")
 });
 
+sio.on('send_message', (data,cb) => {
+    updateMessage(data.name, data.message);
+    cb("Success")
+});
+
 sio.on('reserve_slot', (data, cb) => {
     rsuString = data.rsuName + "Slots";
     if(data.obuName == "obuNone")
     {
-        updateMessage(window[rsuString][[parseInt(data.slot)]], "Leaving the park");
+        //updateMessage(window[rsuString][[parseInt(data.slot)]], "Leaving the park");
+        updateSlots(data.rsuName, "more", data.slot);
         window[rsuString][parseInt(data.slot)] = "";
     } 
     else if(data.changePlace)
@@ -185,13 +195,16 @@ sio.on('reserve_slot', (data, cb) => {
         window[rsuString][2] = "";
         window[data.obuName].setPosition(window[slotString]);
         console.log(data.obuName + " changing from slot 2 to slot " + data.slot + " in " + data.rsuName);
-        updateMessage(data.obuName, "Switching from slot 2 to slot " + data.slot);
+        updateSlots(data.rsuName, "more", 2);
+        updateSlots(data.rsuName, data.obuName, data.slot);
+        //updateMessage(data.obuName, "Switching from slot 2 to slot " + data.slot);
     }
     else 
     {
         window[rsuString][parseInt(data.slot)] = data.obuName;
         console.log("Reserve slot " + data.slot + " of " + data.rsuName + " for " + data.obuName);
-        updateMessage(data.obuName, "Reserve slot " + data.slot + " of " + data.rsuName + " for " + data.obuName);
+        updateSlots(data.rsuName, data.obuName, data.slot);
+        //updateMessage(data.obuName, "Reserve slot " + data.slot + " of " + data.rsuName + " for " + data.obuName);
     }
     cb("Success")
 });
