@@ -1,13 +1,9 @@
 import copy
-import imp
 from random import randint
-from time import sleep
 import json
 import threading
 from simulator.car import Car
 from simulator.park import Park
-from simulator.messages.event import event
-
 
 # The callback for when a PUBLISH message is received from the server.
 def main(sid, sio):
@@ -29,7 +25,7 @@ def main(sid, sio):
     obu1.location = randint(0, 135)
     obu1.updateLocation((float)(coords_json[str(obu1.location)]["latitude"]), (float)(
         coords_json[str(obu1.location)]["longitude"]))
-    obu1.battery = randint(30, 100)
+    obu1.battery = randint(300, 1000)
     obus.append(obu1)
 
     obu2 = Car(copy.deepcopy(cam_json),
@@ -37,7 +33,7 @@ def main(sid, sio):
     obu2.location = randint(0, 135)
     obu2.updateLocation((float)(coords_json[str(obu2.location)]["latitude"]), (float)(
         coords_json[str(obu2.location)]["longitude"]))
-    obu2.battery = randint(30, 100)
+    obu2.battery = randint(300, 1000)
     obus.append(obu2)
 
     obu3 = Car(copy.deepcopy(cam_json),
@@ -45,7 +41,7 @@ def main(sid, sio):
     obu3.location = randint(0, 135)
     obu3.updateLocation((float)(coords_json[str(obu3.location)]["latitude"]), (float)(
         coords_json[str(obu3.location)]["longitude"]))
-    obu3.battery = randint(30, 100)
+    obu3.battery = randint(300, 1000)
     obus.append(obu3)
 
     obu4 = Car(copy.deepcopy(cam_json),
@@ -53,7 +49,7 @@ def main(sid, sio):
     obu4.location = randint(0, 135)
     obu4.updateLocation((float)(coords_json[str(obu4.location)]["latitude"]), (float)(
         coords_json[str(obu4.location)]["longitude"]))
-    obu4.battery = randint(30, 100)
+    obu4.battery = randint(300, 1000)
     obus.append(obu4)
 
     obu5 = Car(copy.deepcopy(cam_json),
@@ -61,7 +57,7 @@ def main(sid, sio):
     obu5.location = randint(0, 135)
     obu5.updateLocation((float)(coords_json[str(obu5.location)]["latitude"]), (float)(
         coords_json[str(obu5.location)]["longitude"]))
-    obu5.battery = randint(30, 100)
+    obu5.battery = randint(300, 1000)
     obus.append(obu5)
 
     obu6 = Car(copy.deepcopy(cam_json),
@@ -69,8 +65,24 @@ def main(sid, sio):
     obu6.location = randint(0, 135)
     obu6.updateLocation((float)(coords_json[str(obu6.location)]["latitude"]), (float)(
         coords_json[str(obu6.location)]["longitude"]))
-    obu6.battery = randint(30, 100)
+    obu6.battery = randint(300, 1000)
     obus.append(obu6)
+
+    obu7 = Car(copy.deepcopy(cam_json),
+               copy.deepcopy(denm_json), "192.168.98.26", "obu7", 6)
+    obu7.location = randint(0, 135)
+    obu7.updateLocation((float)(coords_json[str(obu7.location)]["latitude"]), (float)(
+        coords_json[str(obu7.location)]["longitude"]))
+    obu7.battery = randint(300, 1000)
+    obus.append(obu7)
+
+    obu8 = Car(copy.deepcopy(cam_json),
+               copy.deepcopy(denm_json), "192.168.98.27", "obu8", 6)
+    obu8.location = randint(0, 135)
+    obu8.updateLocation((float)(coords_json[str(obu8.location)]["latitude"]), (float)(
+        coords_json[str(obu8.location)]["longitude"]))
+    obu8.battery = randint(300, 1000)
+    obus.append(obu8)
 
     rsus = []
 
