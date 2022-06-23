@@ -7,9 +7,19 @@ var rsu2Slots;
 
 function initMap() {
     const aveiro = { lat: 40.632728, lng: -8.65702 };
+    var removePOIs =[
+        {
+            featureType: "poi",
+            elementType: "labels",
+            stylers: [
+                  { visibility: "off" }
+            ]
+        }
+    ];
     var mapProp = {
         center: aveiro,
         zoom: 16.3,
+        styles: removePOIs
     };
     var rsu1Location = new google.maps.LatLng(40.63563, -8.65993); 
     var rsu2Location = new google.maps.LatLng(40.62923, -8.65496); 
