@@ -58,6 +58,15 @@ function initMap() {
     rsu1Slots = new Array(3).fill("");
     rsu2Slots = new Array(3).fill("");
     rsu1InHistory = new Array();
+    rsu2InHistory = new Array();
+    obu1InHistory = new Array();
+    obu2InHistory = new Array();
+    obu3InHistory = new Array();
+    obu4InHistory = new Array();
+    obu5InHistory = new Array();
+    obu6InHistory = new Array();
+    obu7InHistory = new Array();
+    obu8InHistory = new Array();
 }
 
 function startSim() {
@@ -152,14 +161,20 @@ function updateSlots(rsu, obu, slot) {
 }
 
 function listHistory(object) {
-    msgList = object.id + "History";
-    alertString = "";
-    for(msg in window[msgList])
+    msgListStr = object.id + "History";
+    msgList = window[msgListStr];
+    
+    var ul = document.createElement('ul');
+    ul.setAttribute('id','historyList');
+
+    document.getElementById('historyDiv').appendChild(ul);
+
+    for(msg in msgList)
     {
-        alertString += msg;
-        alertString += "\n";
+        var li = document.createElement('li');
+        ul.appendChild(li);
+        li.innerHTML = msg;
     }
-    alert(alertString);
 }
 
 const sio = io();
