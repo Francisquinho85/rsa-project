@@ -51,28 +51,8 @@ th, td {
   padding: 32px;
 }
 
-.column100.column1.obu1 {
-  background-color: blue;
-}
-
-.column100.column1.obu2 {
-  background-color: green;
-}
-
-.column100.column1.obu3 {
-  background-color: red;
-}
-
-.column100.column1.obu4 {
-  background-color: orange;
-}
-
-.column100.column1.obu5 {
-  background-color: black;
-}
-
-.column100.column1.obu6 {
-  background-color: pink;
+.column100.column4 {
+  font-size: 8px;
 }
 
 .row100.head th {

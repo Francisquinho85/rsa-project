@@ -166,7 +166,6 @@ sio.on('enter_park', (data, cb) => {
     slotString = data.rsuName + "Slot" + tmp + "Location";
     window[data.obuName].setPosition(window[slotString]);
     updateBattery(data.obuName, data.battery);
-    //updateMessage(data.obuName, "Entering the park", 0);
     cb("Success")
 });
 
@@ -176,7 +175,13 @@ sio.on('send_battery', (data,cb) => {
 });
 
 sio.on('send_message', (data,cb) => {
-    updateMessage(data.name, data.message);
+    let text = document.getElementById(data.name + "In").innerHTML;
+    const oldMessage = text.split("<br>");
+    let newMessage = data.message
+    newMessage += "<br>"
+    newMessage += oldMessage[0];
+    
+    updateMessage(data.name, newMessage);
     cb("Success")
 });
 
@@ -184,7 +189,6 @@ sio.on('reserve_slot', (data, cb) => {
     rsuString = data.rsuName + "Slots";
     if(data.obuName == "obuNone")
     {
-        //updateMessage(window[rsuString][[parseInt(data.slot)]], "Leaving the park");
         updateSlots(data.rsuName, "more", data.slot);
         window[rsuString][parseInt(data.slot)] = "";
     } 
@@ -197,14 +201,12 @@ sio.on('reserve_slot', (data, cb) => {
         console.log(data.obuName + " changing from slot 2 to slot " + data.slot + " in " + data.rsuName);
         updateSlots(data.rsuName, "more", 2);
         updateSlots(data.rsuName, data.obuName, data.slot);
-        //updateMessage(data.obuName, "Switching from slot 2 to slot " + data.slot);
     }
     else 
     {
         window[rsuString][parseInt(data.slot)] = data.obuName;
         console.log("Reserve slot " + data.slot + " of " + data.rsuName + " for " + data.obuName);
         updateSlots(data.rsuName, data.obuName, data.slot);
-        //updateMessage(data.obuName, "Reserve slot " + data.slot + " of " + data.rsuName + " for " + data.obuName);
     }
     cb("Success")
 });
