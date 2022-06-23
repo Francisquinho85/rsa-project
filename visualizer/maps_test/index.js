@@ -6,6 +6,7 @@ var rsu1Slot0Location, rsu1Slot1Location, rsu1Slot2Location;
 var rsu2Slot0Location, rsu2Slot1Location, rsu2Slot2Location;
 var rsu1Slots;
 var rsu2Slots;
+var listShow;
 
 function initMap() {
     const aveiro = { lat: 40.632728, lng: -8.65702 };
@@ -73,6 +74,7 @@ function startSim() {
     sio.emit('startSim');
     document.getElementById("startBtn").style.display = "none";
     document.getElementById("verTable").style.display = "table";
+    listShow = 0;
 
     obu1 = new google.maps.Marker({
         map: map,
@@ -161,19 +163,31 @@ function updateSlots(rsu, obu, slot) {
 }
 
 function listHistory(object) {
-    msgListStr = object.id + "History";
-    msgList = window[msgListStr];
-    
-    var ul = document.createElement('ul');
-    ul.setAttribute('id','historyList');
-
-    document.getElementById('historyDiv').appendChild(ul);
-
-    for(msg in msgList)
+    if(!listShow)
     {
-        var li = document.createElement('li');
-        ul.appendChild(li);
-        li.innerHTML = msg;
+        msgListStr = object.id + "History";
+        msgList = window[msgListStr];
+        console.log(rsu1InHistory);
+        document.getElementById('historyDiv').removeChild(document.getElementById("historyList"));
+        var ul = document.createElement('ul');
+        ul.setAttribute('id','historyList');
+        
+        document.getElementById('historyDiv').style.backgroundColor = "gray";
+        document.getElementById('historyDiv').style.display = 'block';
+        document.getElementById('historyDiv').appendChild(ul);
+        
+        for(i = 0; i < msgList.length; i++)
+        {
+            console.log(msgList[i]);
+            var li = document.createElement('li');
+            ul.appendChild(li);
+            li.innerHTML = msgList[i];
+        }
+        listShow = 1;
+    } else 
+    {
+        document.getElementById('historyDiv').style.display = 'none';
+        listShow = 0;
     }
 }
 
