@@ -20,7 +20,7 @@ def main(sid, sio):
 
     obus = []
 
-    obu1 = Car(copy.deepcopy(cam_json),
+    obu1 = Car(coords_json, copy.deepcopy(cam_json),
                copy.deepcopy(denm_json), "192.168.98.20", "obu1", 1, sid, sio)
     obu1.location = randint(0, 135)
     obu1.updateLocation((float)(coords_json[str(obu1.location)]["latitude"]), (float)(
@@ -28,7 +28,7 @@ def main(sid, sio):
     obu1.battery = randint(300, 1000)
     obus.append(obu1)
 
-    obu2 = Car(copy.deepcopy(cam_json),
+    obu2 = Car(coords_json,copy.deepcopy(cam_json),
                copy.deepcopy(denm_json), "192.168.98.21", "obu2", 2, sid, sio)
     obu2.location = randint(0, 135)
     obu2.updateLocation((float)(coords_json[str(obu2.location)]["latitude"]), (float)(
@@ -36,7 +36,7 @@ def main(sid, sio):
     obu2.battery = randint(300, 1000)
     obus.append(obu2)
 
-    obu3 = Car(copy.deepcopy(cam_json),
+    obu3 = Car(coords_json,copy.deepcopy(cam_json),
                copy.deepcopy(denm_json), "192.168.98.22", "obu3", 3, sid, sio)
     obu3.location = randint(0, 135)
     obu3.updateLocation((float)(coords_json[str(obu3.location)]["latitude"]), (float)(
@@ -44,7 +44,7 @@ def main(sid, sio):
     obu3.battery = randint(300, 1000)
     obus.append(obu3)
 
-    obu4 = Car(copy.deepcopy(cam_json),
+    obu4 = Car(coords_json,copy.deepcopy(cam_json),
                copy.deepcopy(denm_json), "192.168.98.23", "obu4", 4, sid, sio)
     obu4.location = randint(0, 135)
     obu4.updateLocation((float)(coords_json[str(obu4.location)]["latitude"]), (float)(
@@ -52,7 +52,7 @@ def main(sid, sio):
     obu4.battery = randint(300, 1000)
     obus.append(obu4)
 
-    obu5 = Car(copy.deepcopy(cam_json),
+    obu5 = Car(coords_json,copy.deepcopy(cam_json),
                copy.deepcopy(denm_json), "192.168.98.24", "obu5", 5, sid, sio)
     obu5.location = randint(0, 135)
     obu5.updateLocation((float)(coords_json[str(obu5.location)]["latitude"]), (float)(
@@ -60,7 +60,7 @@ def main(sid, sio):
     obu5.battery = randint(300, 1000)
     obus.append(obu5)
 
-    obu6 = Car(copy.deepcopy(cam_json),
+    obu6 = Car(coords_json,copy.deepcopy(cam_json),
                copy.deepcopy(denm_json), "192.168.98.25", "obu6", 6, sid, sio)
     obu6.location = randint(0, 135)
     obu6.updateLocation((float)(coords_json[str(obu6.location)]["latitude"]), (float)(
@@ -68,7 +68,7 @@ def main(sid, sio):
     obu6.battery = randint(300, 1000)
     obus.append(obu6)
 
-    obu7 = Car(copy.deepcopy(cam_json),
+    obu7 = Car(coords_json,copy.deepcopy(cam_json),
                copy.deepcopy(denm_json), "192.168.98.26", "obu7", 7, sid, sio)
     obu7.location = randint(0, 135)
     obu7.updateLocation((float)(coords_json[str(obu7.location)]["latitude"]), (float)(
@@ -76,7 +76,7 @@ def main(sid, sio):
     obu7.battery = randint(300, 1000)
     obus.append(obu7)
 
-    obu8 = Car(copy.deepcopy(cam_json),
+    obu8 = Car(coords_json,copy.deepcopy(cam_json),
                copy.deepcopy(denm_json), "192.168.98.27", "obu8", 8, sid, sio)
     obu8.location = randint(0, 135)
     obu8.updateLocation((float)(coords_json[str(obu8.location)]["latitude"]), (float)(
@@ -119,7 +119,7 @@ def main(sid, sio):
     #     sleep(1)
     proc = []
     for obu in obus:
-        p = threading.Thread(target=obu.run, args=(0 ,coords_json))
+        p = threading.Thread(target=obu.run, args=())
         proc.append(p)
 
     for rsu in rsus:

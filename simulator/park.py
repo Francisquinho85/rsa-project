@@ -49,7 +49,7 @@ class Park:
 
     def on_message(self, client, userdata, msg):
         message = json.loads(msg.payload.decode())
-        if(msg.topic == "vanetza/out/denm" and getCauseCode(message) == event["batteryStatus"]):
+        if(msg.topic == "vanetza/out/denm" and getCauseCode(message) == event["batteryStatus"] and getType(message) == 5):
             # result = self.sio.call('send_message', self.sendMessage("Receive denm batteryStatus to obu" + str(getId(message))), to=self.sid)
             print("Sending Park status " , self.name , " free " , self.freeCharges  , " slots " , self.freeSlots , " " , self.carList)
             if(self.freeCharges > 0):
@@ -63,7 +63,7 @@ class Park:
                 result = self.sio.call('send_message', self.sendMessage("DENM - parkStatus(" + str(event["parkStatus"]) + ") : parkFull(" + str(event["parkFull"])+ ")"), to=self.sid)
             self.mqttc.publish("vanetza/in/denm", json.dumps(self.denm))
         # Reserve charger slot confirmation or cancel
-        if(msg.topic == "vanetza/out/denm" and getSubCauseCode(message) == self.id):
+        if(msg.topic == "vanetza/out/denm" and getSubCauseCode(message) == self.id and getType(message) == 5):
             
             if(getCauseCode(message) == event["reserveSlotCharger"]):
                 # result = self.sio.call('send_message', self.sendMessage("Receive denm reserveSlotCharger to obu" + str(getId(message))), to=self.sid)
@@ -112,6 +112,21 @@ class Park:
                             self.freeSlots += 1
                             self.carList[c] = None
 
+            if(getCauseCode(message) == event["cancelSlot"]):
+                for c in range(len(self.carList)):
+                    if(self.carList[c] == getId(message)):
+                        if(self.carList[self.slots-1] == self.carList[c]):
+                            self.carList[c] = None
+                            self.freeSlots += 1
+                        elif(self.carList[self.slots-1] != None):
+                            self.carList[c] = self.carList[self.slots-1]
+                            self.freeSlots += 1
+                            self.carList[self.slots-1] = None
+                        else:
+                            self.freeCharges += 1
+                            self.freeSlots += 1
+                            self.carList[c] = None
+                        result = self.sio.call('reserve_slot', self.sendSlots(self.carList[c], c, 0), to=self.sid)
 
     def sendSlots(self, id, slot, changePlace):
         return{

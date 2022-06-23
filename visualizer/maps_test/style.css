@@ -124,9 +124,8 @@ th, td {
   padding-left: 2px;
 }
 
-.nav ul {
-  height: 700px;
-  width: 20%;
+nav ul {
+  height: 500px;
   overflow: hidden;
   overflow-y: scroll;
 }

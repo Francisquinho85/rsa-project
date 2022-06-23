@@ -1,3 +1,5 @@
+from calendar import month_name
+from itertools import count
 import paho.mqtt.client as mqtt
 import json
 import time
@@ -8,7 +10,8 @@ from simulator.utils import *
 
 
 class Car:
-    def __init__(self, cam, denm, ip, name, id, sid, sio):
+    def __init__(self, coords_json, cam, denm, ip, name, id, sid, sio):
+        self.coords_json = coords_json
         self.battery = 0
         self.latitude = 0
         self.longitude = 0
@@ -35,6 +38,7 @@ class Car:
         self.denm["management"]["stationType"] = 5
         self.sid = sid
         self.sio = sio
+        self.currentPark = None
 
     def updateLocation(self, latitude, longitude):
         self.latitude = latitude
@@ -80,7 +84,7 @@ class Car:
 
     def on_message(self, client, userdata, msg):
         message = json.loads(msg.payload.decode())
-        if(msg.topic == "vanetza/out/denm" and self.wantToCharge):
+        if(msg.topic == "vanetza/out/denm" and self.wantToCharge and getType(message) == 15):
             # Receive park status
             if(getCauseCode(message) == event["parkStatus"] and not self.normalSlotReserved and not self.chargerSlotReserved):
                 # result = self.sio.call('send_message', self.sendMessage("Receive denm parkStatus from rsu" + str(getId(message))), to=self.sid)
@@ -89,43 +93,111 @@ class Car:
                     self.updateEvent(event["reserveSlotCharger"], getId(message))
                     self.mqttc.publish("vanetza/in/denm", json.dumps(self.denm))
                     self.chargerSlotReserved = True
+                    self.currentPark = self.getParkLocation(getLatitude(message), getLongitude(message))
                     result = self.sio.call('send_message', self.sendMessage("DENM - reserveSlotCharger(" + str(event["reserveSlotCharger"]) + ") : rsuId(" + str(getId(message)) + ")"), to=self.sid)
                 elif(getSubCauseCode(message) == event["parkWithNormalPlace"]):
                     print("Reserving Normal slot " + self.name)
                     self.updateEvent(event["reserveSlotNormal"], getId(message))
                     self.mqttc.publish("vanetza/in/denm", json.dumps(self.denm))
                     self.normalSlotReserved = True
+                    self.currentPark = self.getParkLocation(getLatitude(message), getLongitude(message))
                     result = self.sio.call('send_message', self.sendMessage("DENM - reserveSlotNormal(" + str(event["reserveSlotNormal"]) + ") : rsuId(" + str(getId(message)) + ")"), to=self.sid)
+            
+            elif(getCauseCode(message) == event["parkStatus"] and (self.normalSlotReserved or self.chargerSlotReserved)):
+                newPark = self.getParkLocation(getLatitude(message), getLongitude(message))
+                if(self.normalSlotReserved and getSubCauseCode(message) == event["parkWithChargerPlace"]):
+                    print("Reserving Charger slot " + self.name)
+                    self.currentPark = newPark
+                    self.updateEvent(event["reserveSlotCharger"], getId(message))
+                    self.mqttc.publish("vanetza/in/denm", json.dumps(self.denm))
+                    self.chargerSlotReserved = True
+                    self.normalSlotReserved = False
+                    result = self.sio.call('send_message', self.sendMessage("DENM - reserveSlotCharger(" + str(event["reserveSlotCharger"]) + ") : rsuId(" + str(getId(message)) + ")"), to=self.sid)
+                elif(self.getParkDistance(newPark) < self.getParkDistance(self.currentPark)):
+                    if(getSubCauseCode(message) == event["parkWithChargerPlace"]):
+                        print("Reserving Charger slot " + self.name)
+                        self.currentPark = newPark
+                        self.updateEvent(event["reserveSlotCharger"], getId(message))
+                        self.mqttc.publish("vanetza/in/denm", json.dumps(self.denm))
+                        self.chargerSlotReserved = True
+                        self.normalSlotReserved = False
+                        result = self.sio.call('send_message', self.sendMessage("DENM - reserveSlotCharger(" + str(event["reserveSlotCharger"]) + ") : rsuId(" + str(getId(message)) + ")"), to=self.sid)
+                    elif(getSubCauseCode(message) == event["parkWithNormalPlace"] and not self.chargerSlotReserved):
+                        print("Reserving Normal slot " + self.name)
+                        self.currentPark = newPark
+                        self.updateEvent(event["reserveSlotNormal"], getId(message))
+                        self.mqttc.publish("vanetza/in/denm", json.dumps(self.denm))
+                        self.chargerSlotReserved = False
+                        self.normalSlotReserved = True
+                        result = self.sio.call('send_message', self.sendMessage("DENM - reserveSlotNormal(" + str(event["reserveSlotNormal"]) + ") : rsuId(" + str(getId(message)) + ")"), to=self.sid)
+            
+            
+            
             # Receive park confirm or cancel
-            if(getSubCauseCode(message) == self.id):
+            elif(getSubCauseCode(message) == self.id):
                 print("Receive park confirm or cancel " + self.name)
                 if(getCauseCode(message) == event["confirmSlot"]):
-                    print("Slot Confirmed for " + self.name)
-                    self.wantToCharge = False
-                    self.parkLatitude = (float)(getLatitude(message))
-                    self.parkLongitude = (float)(getLongitude(message))
-                    self.parkId = getId(message)
+                    messagePark = self.getParkLocation(getLatitude(message), getLongitude(message))
+                    if(messagePark == self.currentPark):
+                        if(self.parkId == None):
+                            print("Slot Confirmed for " + self.name)
+                            # self.wantToCharge = False
+                            self.parkLatitude = (float)(getLatitude(message))
+                            self.parkLongitude = (float)(getLongitude(message))
+                            self.parkId = getId(message)
+                        else:
+                            print("Slot Confirmed for " + self.name)
+                            # self.wantToCharge = False
+                            self.parkLatitude = (float)(getLatitude(message))
+                            self.parkLongitude = (float)(getLongitude(message))
+                            self.updateEvent(event["cancelSlot"], self.parkId)
+                            self.mqttc.publish("vanetza/in/denm", json.dumps(self.denm))
+                            result = self.sio.call('send_message', self.sendMessage("DENM - cancelSlot(" + str(event["cancelSlot"]) + ") : rsuId(" + str(self.parkId) + ")"), to=self.sid)
+                            self.parkId = getId(message)
+                    elif(messagePark != self.currentPark):
+                        if(self.parkId == None):
+                            print("Slot Confirmed for " + self.name)
+                            self.parkLatitude = (float)(getLatitude(message))
+                            self.parkLongitude = (float)(getLongitude(message))
+                            self.parkId = getId(message)
+                        else:
+                            self.updateEvent(event["cancelSlot"], getId(message))
+                            self.mqttc.publish("vanetza/in/denm", json.dumps(self.denm))
+                            result = self.sio.call('send_message', self.sendMessage("DENM - cancelSlot(" + str(event["cancelSlot"]) + ") : rsuId(" + str(getId(message)) + ")"), to=self.sid)
                     # result = self.sio.call('send_message', self.sendMessage("Receive denm confirmSlot from rsu" + str(getId(message))), to=self.sid)
-                if(getCauseCode(message) == event["cancelSlot"]):
+                
+                elif(getCauseCode(message) == event["cancelSlot"]):
                     print("Slot Canceled for " + self.name)
                     self.chargerSlotReserved = False
                     self.normalSlotReserved = False
                     # result = self.sio.call('send_message', self.sendMessage("Receive denm cancelSlot from rsu"+ str(getId(message))), to=self.sid)
                     a = 0  # TODO normal life
-        if(msg.topic == "vanetza/out/denm" and getSubCauseCode(message) == self.id and getCauseCode(message) == event["changeToCharger"]):
+        
+        if(msg.topic == "vanetza/out/denm" and getSubCauseCode(message) == self.id and getCauseCode(message) == event["changeToCharger"] and getType(message) == 15):
             print("Slot Change for " + self.name)
             # result = self.sio.call('send_message', self.sendMessage("Receive denm changeToCharger from rsu"+ str(getId(message))), to=self.sid)
             self.chargerSlotReserved = True
             self.normalSlotReserved = False
-            a = 0  # TODO change place
+            a = 0  # TODO change place            
 
-    def getParkLocation(self, coords_json):
-        for i in coords_json:
-            if((float)(coords_json[i]["latitude"]) == round(self.parkLatitude, 5) and (float)(coords_json[i]["longitude"]) == round(self.parkLongitude, 5)):
+    def getParkLocation(self, latitude, longitude):
+        for i in self.coords_json:
+            if((float)(self.coords_json[i]["latitude"]) == round(latitude, 5) and (float)(self.coords_json[i]["longitude"]) == round(longitude, 5)):
                 return (int)(i)
 
-    def goToThePark(self, coords_json):
-        parkLocation = self.getParkLocation(coords_json)
+    def getParkDistance(self, parkLocation):
+        if(parkLocation > self.location):
+            distance1 = parkLocation - self.location
+            distance2 = self.location + (135 - parkLocation)
+        else:
+            distance1 = self.location - parkLocation
+            distance2 = parkLocation + (135 - self.location)
+        if(distance1<distance2):
+            return distance1
+        return distance2
+
+    def goToThePark(self):
+        parkLocation = self.getParkLocation(self.parkLatitude, self.parkLongitude)
         reverse = False
         print("Going to the park " + self.name)
         # Check which direction is faster
@@ -141,8 +213,19 @@ class Car:
             else:
                 reverse = False
 
+        counter = 0 
         while True:
+            
+            if(counter%5 == 0):
+                self.updateEvent(event["batteryStatus"], event["battery0_25"])
+                self.mqttc.publish("vanetza/in/denm", json.dumps(self.denm))
+                result = self.sio.call('send_message', self.sendMessage("DENM - batteryStatus(" + str(event["batteryStatus"]) + ") : battery0_25(" + str(event["battery0_25"])+ ")"), to=self.sid)
+                counter = 0
+
             # Check if arrived to the park
+            if(parkLocation != self.getParkLocation(self.parkLatitude, self.parkLongitude)):
+                break
+
             if(self.location == parkLocation):
                 break
 
@@ -153,7 +236,7 @@ class Car:
                 self.location += 1
 
             # Decrease battery percentage
-            self.battery -= randint(0, 3)
+            self.battery -= randint(0, 5)
 
             # Check if is in the position limits
             if(self.location > 135):
@@ -162,14 +245,16 @@ class Car:
                 self.location = 135
 
             # Update Coordinates
-            self.updateLocation((float)(coords_json[str(self.location)]["latitude"]), (float)(coords_json[str(self.location)]["longitude"]))
+            self.updateLocation((float)(self.coords_json[str(self.location)]["latitude"]), (float)(self.coords_json[str(self.location)]["longitude"]))
             # self.mqttc.publish("vanetza/in/cam", json.dumps(self.cam))
 
             # Send new coordinates to frontend
             result = self.sio.call('send_coords', self.sendLocation(), to=self.sid)
+            counter += 1
             time.sleep(0.2)
 
-    def enterThePark(self, coords_json, desiredBattery):
+    def enterThePark(self, desiredBattery):
+        self.wantToCharge = False
         isCharged = False
         print("Entered the park " + self.name)
         result = self.sio.call('enter_park', self.sendPark(), to=self.sid)
@@ -189,7 +274,7 @@ class Car:
             # self.mqttc.publish("vanetza/in/cam", json.dumps(self.cam))
             time.sleep(0.2)
 
-    def leaveThePark(self, coords_json):
+    def leaveThePark(self):
         print("Leaving the park " + self.name)
         self.updateEvent(event["exitPark"], self.parkId)
         self.mqttc.publish("vanetza/in/denm", json.dumps(self.denm))
@@ -201,19 +286,21 @@ class Car:
         self.normalSlotReserved = False
         result = self.sio.call('send_coords', self.sendLocation(), to=self.sid)
 
-    def run(self, a, coords_json):
+    def run(self):
         self.mqttc.publish("vanetza/in/cam", json.dumps(self.cam))
         while True:
             if(self.parkLatitude != 0):
-                self.goToThePark(coords_json)
-                self.enterThePark(coords_json, 1000)
-                self.leaveThePark(coords_json)
+                self.goToThePark()
+                if(self.location != self.getParkLocation(self.parkLatitude, self.parkLongitude)):
+                    self.goToThePark()
+                self.enterThePark(1000)
+                self.leaveThePark()
             self.location += 1
-            self.battery -= randint(0, 3)
+            self.battery -= randint(0, 5)
             if(self.location > 135):
                 self.location = 0
-            self.updateLocation((float)(coords_json[str(self.location)]["latitude"]), (float)(
-                coords_json[str(self.location)]["longitude"]))
+            self.updateLocation((float)(self.coords_json[str(self.location)]["latitude"]), (float)(
+                self.coords_json[str(self.location)]["longitude"]))
             # self.mqttc.publish("vanetza/in/cam", json.dumps(self.cam))
             if(self.battery <= 250): #and not self.wantToCharge):
                 print("I want to charge " + self.name)

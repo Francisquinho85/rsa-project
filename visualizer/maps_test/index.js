@@ -167,21 +167,17 @@ function listHistory(object) {
     {
         msgListStr = object.id + "History";
         msgList = window[msgListStr];
-        console.log(rsu1InHistory);
-        document.getElementById('historyDiv').removeChild(document.getElementById("historyList"));
-        var ul = document.createElement('ul');
-        ul.setAttribute('id','historyList');
         
-        document.getElementById('historyDiv').style.backgroundColor = "gray";
         document.getElementById('historyDiv').style.display = 'block';
-        document.getElementById('historyDiv').appendChild(ul);
-        
+        var table = document.getElementById('historyTable');
+        table.style.display = "block";
         for(i = 0; i < msgList.length; i++)
         {
             console.log(msgList[i]);
-            var li = document.createElement('li');
-            ul.appendChild(li);
-            li.innerHTML = msgList[i];
+            var row = table.insertRow(0);
+            row.classList.add("row100");
+            var cell = row.insertCell(0);
+            cell.innerHTML = msgList[i];
         }
         listShow = 1;
     } else 
@@ -228,7 +224,7 @@ sio.on('send_battery', (data,cb) => {
 });
 
 sio.on('send_message', (data,cb) => {
-    window[data.name + "InHistory"].push(data.message);
+    window[data.name + "InHistory"].unshift(data.message);
     let text = document.getElementById(data.name + "In").innerHTML;
     const oldMessage = text.split("<br>");
     let newMessage = data.message;

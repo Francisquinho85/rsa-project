@@ -14,3 +14,6 @@ def getLatitude(message):
 
 def getLongitude(message):
     return message["fields"]["denm"]["management"]["eventPosition"]["longitude"]
+
+def getType(message):
+    return message["fields"]["denm"]["management"]["stationType"]
