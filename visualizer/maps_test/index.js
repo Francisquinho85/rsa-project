@@ -1,4 +1,6 @@
 var map, rsu1, rsu2, obu1, obu2, obu3, obu4, obu5, obu6, obu7, obu8;
+var rsu1InHistory, rsu2InHistory, obu1InHistory, obu2InHistory, obu3InHistory;
+var obu4InHistory, obu5InHistory, obu6InHistory, obu7InHistory, obu8InHistory;
 var rsu1Park, rsu2Park;
 var rsu1Slot0Location, rsu1Slot1Location, rsu1Slot2Location;
 var rsu2Slot0Location, rsu2Slot1Location, rsu2Slot2Location;
@@ -55,6 +57,7 @@ function initMap() {
     rsu2Slot2Location = new google.maps.LatLng(40.62775, -8.65442);
     rsu1Slots = new Array(3).fill("");
     rsu2Slots = new Array(3).fill("");
+    rsu1InHistory = new Array();
 }
 
 function startSim() {
@@ -148,6 +151,17 @@ function updateSlots(rsu, obu, slot) {
     document.getElementById(rsu + "Slot" + slot).src = imageString
 }
 
+function listHistory(object) {
+    msgList = object.id + "History";
+    alertString = "";
+    for(msg in window[msgList])
+    {
+        alertString += msg;
+        alertString += "\n";
+    }
+    alert(alertString);
+}
+
 const sio = io();
 
 sio.on('connect', () => {
@@ -186,11 +200,11 @@ sio.on('send_battery', (data,cb) => {
 
 sio.on('send_message', (data,cb) => {
     let text = document.getElementById(data.name + "In").innerHTML;
+    window[text + "History"].push(data.message);
     const oldMessage = text.split("<br>");
     let newMessage = data.message
     newMessage += "<br>"
     newMessage += oldMessage[0];
-    
     updateMessage(data.name, newMessage);
     cb("Success")
 });
