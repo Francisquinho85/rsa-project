@@ -228,10 +228,10 @@ sio.on('send_battery', (data,cb) => {
 });
 
 sio.on('send_message', (data,cb) => {
+    window[data.name + "InHistory"].push(data.message);
     let text = document.getElementById(data.name + "In").innerHTML;
-    window[text + "History"].push(data.message);
     const oldMessage = text.split("<br>");
-    let newMessage = data.message
+    let newMessage = data.message;
     newMessage += "<br>"
     newMessage += oldMessage[0];
     updateMessage(data.name, newMessage);
