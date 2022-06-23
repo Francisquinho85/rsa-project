@@ -50,23 +50,23 @@ class Park:
     def on_message(self, client, userdata, msg):
         message = json.loads(msg.payload.decode())
         if(msg.topic == "vanetza/out/denm" and getCauseCode(message) == event["batteryStatus"]):
-            result = self.sio.call('send_message', self.sendMessage("Receive denm batteryStatus to obu" + str(getId(message))), to=self.sid)
+            # result = self.sio.call('send_message', self.sendMessage("Receive denm batteryStatus to obu" + str(getId(message))), to=self.sid)
             print("Sending Park status " , self.name , " free " , self.freeCharges  , " slots " , self.freeSlots , " " , self.carList)
             if(self.freeCharges > 0):
                 self.updateEvent(event["parkStatus"], event["parkWithChargerPlace"])
-                result = self.sio.call('send_message', self.sendMessage("Send denm parkWithChargerPlace to obu" + str(getId(message))), to=self.sid)
+                result = self.sio.call('send_message', self.sendMessage("DENM - parkStatus(" + str(event["parkStatus"]) + ") : parkWithChargerPlace(" + str(event["parkWithChargerPlace"])+ ")"), to=self.sid)
             elif(self.freeSlots > 0):
                 self.updateEvent(event["parkStatus"], event["parkWithNormalPlace"])
-                result = self.sio.call('send_message', self.sendMessage("Send denm parkWithNormalPlace to obu" + str(getId(message))), to=self.sid)
+                result = self.sio.call('send_message', self.sendMessage("DENM - parkStatus(" + str(event["parkStatus"]) + ") : parkWithNormalPlace(" + str(event["parkWithNormalPlace"])+ ")"), to=self.sid)
             else:
                 self.updateEvent(event["parkStatus"], event["parkFull"])
-                result = self.sio.call('send_message', self.sendMessage("Send denm parkFull to obu" + str(getId(message))), to=self.sid)
+                result = self.sio.call('send_message', self.sendMessage("DENM - parkStatus(" + str(event["parkStatus"]) + ") : parkFull(" + str(event["parkFull"])+ ")"), to=self.sid)
             self.mqttc.publish("vanetza/in/denm", json.dumps(self.denm))
         # Reserve charger slot confirmation or cancel
         if(msg.topic == "vanetza/out/denm" and getSubCauseCode(message) == self.id):
             
             if(getCauseCode(message) == event["reserveSlotCharger"]):
-                result = self.sio.call('send_message', self.sendMessage("Receive denm reserveSlotCharger to obu" + str(getId(message))), to=self.sid)
+                # result = self.sio.call('send_message', self.sendMessage("Receive denm reserveSlotCharger to obu" + str(getId(message))), to=self.sid)
                 if(self.freeCharges > 0):
                     self.updateEvent(event["confirmSlot"], getId(message))
                     self.freeCharges -= 1
@@ -75,17 +75,17 @@ class Park:
                         if(self.carList[c] == None):
                             self.carList[c] = getId(message)
                             break
-                    result = self.sio.call('send_message', self.sendMessage("Send denm confirmSlot to obu" + str(getId(message))), to=self.sid)
+                    result = self.sio.call('send_message', self.sendMessage("DENM - confirmSlot(" + str(event["confirmSlot"]) + ") : obuId(" + str(getId(message)) + ")"), to=self.sid)
                     print(self.name + " Confirming slot charger")
                 elif(self.freeCharges == 0):
                     self.updateEvent(event["cancelSlot"], getId(message))
                     print(self.name + " Canceling slot charger")
-                    result = self.sio.call('send_message', self.sendMessage("Send denm cancelSlot to obu" + str(getId(message))), to=self.sid)
+                    result = self.sio.call('send_message', self.sendMessage("DENM - cancelSlot(" + str(event["cancelSlot"]) + ") : obuId(" + str(getId(message)) + ")"), to=self.sid)
                 self.mqttc.publish("vanetza/in/denm", json.dumps(self.denm))
             # Reserve normal slot confirmation or cancel
             
             if(getCauseCode(message) == event["reserveSlotNormal"]):
-                result = self.sio.call('send_message', self.sendMessage("Receive denm reserveSlotNormal to obu" + str(getId(message))), to=self.sid)
+                # result = self.sio.call('send_message', self.sendMessage("Receive denm reserveSlotNormal to obu" + str(getId(message))), to=self.sid)
                 print("RSU Confirming slot normal")
                 if(self.freeSlots > 0):
                     self.updateEvent(event["confirmSlot"],getId(message))
@@ -94,10 +94,10 @@ class Park:
                         if(self.carList[c] == None):
                             self.carList[c] = getId(message)
                             break
-                    result = self.sio.call('send_message', self.sendMessage("Send denm confirmSlot to obu" + str(getId(message))), to=self.sid)
+                    result = self.sio.call('send_message', self.sendMessage("DENM - confirmSlot(" + str(event["confirmSlot"]) + ") : obuId(" + str(getId(message)) + ")"), to=self.sid)
                 elif(self.freeSlots == 0):
                     self.updateEvent(event["cancelSlot"], getId(message))
-                    result = self.sio.call('send_message', self.sendMessage("Send denm cancelSlot to obu" + str(getId(message))), to=self.sid)
+                    result = self.sio.call('send_message', self.sendMessage("DENM - cancelSlot(" + str(event["cancelSlot"]) + ") : obuId(" + str(getId(message)) + ")"), to=self.sid)
                 self.mqttc.publish("vanetza/in/denm", json.dumps(self.denm))
             if(getCauseCode(message) == event["exitPark"]):
                 print("Car exit park")
@@ -134,12 +134,12 @@ class Park:
             for c in range(len(self.carList)):
                 changePlace = 0
                 if(saveCarList[c] != self.carList[c]):
-                    if(self.carList[c] == saveCarList[self.slots-1]):
+                    if(self.carList[c] == saveCarList[self.slots-1] and self.carList[c]!= None):
                         print("change to charger car:", self.carList[c])
                         self.updateEvent(event["changeToCharger"], self.carList[c])
                         self.mqttc.publish("vanetza/in/denm", json.dumps(self.denm))
                         changePlace = 1
-                        result = self.sio.call('send_message', self.sendMessage("Send denm reserveSlotNormal to obu" + str(self.carList[c])), to=self.sid)
+                        result = self.sio.call('send_message', self.sendMessage("DENM - changeToCharger(" + str(event["changeToCharger"]) + ") : obuId(" + str(self.carList[c]) + ")"), to=self.sid)
                     result = self.sio.call('reserve_slot', self.sendSlots(self.carList[c], c, changePlace), to=self.sid)
                     saveCarList = self.carList.copy()
                     print(self.name , " " , self.carList) # print(self.carList)
