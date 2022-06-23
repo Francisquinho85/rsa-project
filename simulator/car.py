@@ -1,5 +1,3 @@
-from calendar import month_name
-from itertools import count
 import paho.mqtt.client as mqtt
 import json
 import time
@@ -171,14 +169,12 @@ class Car:
                     self.chargerSlotReserved = False
                     self.normalSlotReserved = False
                     # result = self.sio.call('send_message', self.sendMessage("Receive denm cancelSlot from rsu"+ str(getId(message))), to=self.sid)
-                    a = 0  # TODO normal life
         
         if(msg.topic == "vanetza/out/denm" and getSubCauseCode(message) == self.id and getCauseCode(message) == event["changeToCharger"] and getType(message) == 15):
             print("Slot Change for " + self.name)
             # result = self.sio.call('send_message', self.sendMessage("Receive denm changeToCharger from rsu"+ str(getId(message))), to=self.sid)
             self.chargerSlotReserved = True
-            self.normalSlotReserved = False
-            a = 0  # TODO change place            
+            self.normalSlotReserved = False           
 
     def getParkLocation(self, latitude, longitude):
         for i in self.coords_json:

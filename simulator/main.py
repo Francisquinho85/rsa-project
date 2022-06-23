@@ -97,26 +97,7 @@ def main(sid, sio):
     rsu2.updateLocation()
     rsus.append(rsu2)
     print(rsu2.latitude, " ", rsu2.longitude)
-    # while True:
-    #     for obu in obus:
-    #         obu.location += 1
-    #         obu.battery -= randint(0, 3)
-    #         if(obu.location > 135):
-    #             obu.location -= 136
-    #         obu.updateLocation((float)(coords_json[str(obu.location)]["latitude"]), (float)(
-    #             coords_json[str(obu.location)]["longitude"]))
-    #         obu.mqttc.publish("vanetza/in/cam", json.dumps(obu.cam))
-    #         if(obu.battery <= 25):
-    #             obu.updateEvent(event["batteryStatus"], event["battery0_25"])
-    #             obu.mqttc.publish("vanetza/in/denm", json.dumps(obu.denm))
-    #         result = sio.call(
-    #             'send_coords', obu.sendLocation(), to=sid)
-    #         # obu.updateLocation((float)(coords_json[i]["latitude"]),
-    #         #                     (float)(coords_json[i]["longitude"]))
-    #         # ret2 = park1.mqttc.publish("vanetza/in/cam", json.dumps(park1.cam))
-    #     for rsu in rsus:
-    #         rsu.mqttc.publish("vanetza/in/cam", json.dumps(rsu.cam))
-    #     sleep(1)
+
     proc = []
     for obu in obus:
         p = threading.Thread(target=obu.run, args=())
