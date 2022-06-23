@@ -123,3 +123,10 @@ th, td {
   width: 1px;
   padding-left: 2px;
 }
+
+.nav ul {
+  height: 700px;
+  width: 20%;
+  overflow: hidden;
+  overflow-y: scroll;
+}
