@@ -163,14 +163,15 @@ function updateSlots(rsu, obu, slot) {
 }
 
 function listHistory(object) {
+    var table = document.getElementById('historyTable');
+
     if(!listShow)
     {
         msgListStr = object.id + "History";
         msgList = window[msgListStr];
-        
         document.getElementById('historyDiv').style.display = 'block';
-        var table = document.getElementById('historyTable');
         table.style.display = "block";
+        
         for(i = 0; i < msgList.length; i++)
         {
             console.log(msgList[i]);
@@ -183,6 +184,7 @@ function listHistory(object) {
     } else 
     {
         document.getElementById('historyDiv').style.display = 'none';
+        table.innerHTML = "";
         listShow = 0;
     }
 }
